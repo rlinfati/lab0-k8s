@@ -1,0 +1,36 @@
+  apiVersion: networking.k8s.io/v1
+  kind: Ingress
+  metadata:
+    name: jupyterhub
+    namespace: jupyterhub
+    annotations:
+      cert-manager.io/cluster-issuer: "le-prod"
+      nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+      nginx.ingress.kubernetes.io/proxy-buffering: "off"
+      nginx.ingress.kubernetes.io/proxy-body-size: 2g
+  spec:
+    ingressClassName: nginx
+    tls:
+      - hosts:
+          - jupyterhub.home.arpa
+          #- synco.ubb.menoscero.com
+          #- cosyn.ubb.menoscero.com
+          #- grujh.menoscero.com
+          #- valjh.menoscero.com
+        secretName: tls
+    rules:
+      - host: jupyterhub.home.arpa
+      #- host: synco.ubb.menoscero.com
+      #- host: cosyn.ubb.menoscero.com
+      #- host: grujh.menoscero.com
+      #- host: valjh.menoscero.com
+        http:
+          paths:
+            - path: /
+              pathType: Prefix
+              backend:
+                service:
+                  name: www
+                  port:
+                    number: 8000

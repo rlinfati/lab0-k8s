@@ -1,0 +1,146 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jhub.config
+  namespace: jupyterhub
+data:
+  jupyterhub_config.py: |
+    # jupyterhub_config.py
+
+    import sys
+    import os
+    import socket
+    import yaml
+
+    c = get_config()
+
+    from oauthenticator.azuread import AzureAdOAuthenticator
+    class AzureMenosCeroOAuth(AzureAdOAuthenticator):
+        def normalize_username(self, username):
+            return username.split("@")[0].lower()
+
+    c.JupyterHub.hub_bind_url = "http://" + socket.gethostbyname( socket.gethostname() ) + ":8001"
+    c.JupyterHub.hub_connect_url = "http://api.jupyterhub.svc.cluster.local:8001"
+    c.JupyterHub.authenticator_class = "azuread"
+    c.JupyterHub.authenticator_class = AzureMenosCeroOAuth
+    c.JupyterHub.spawner_class = "kubespawner.KubeSpawner"
+    c.KubeSpawner.image_pull_policy = "IfNotPresent"
+    c.JupyterHub.shutdown_on_logout = True
+
+    c.Authenticator.admin_users = open("/etc/jupyterhub/secrets/AdminUsers").read().strip()
+    c.OAuthenticator.oauth_callback_url = open("/etc/jupyterhub/secrets/OAuthCallBack").read().strip()
+    c.OAuthenticator.client_id = open("/etc/jupyterhub/secrets/ClientID").read().strip()
+    c.OAuthenticator.client_secret = open("/etc/jupyterhub/secrets/SecretID").read().strip()
+    c.OAuthenticator.allow_all = True
+    c.AzureAdOAuthenticator.tenant_id = open("/etc/jupyterhub/secrets/TenantID").read().strip()
+    c.AzureAdOAuthenticator.username_claim = "unique_name"
+
+    c.KubeSpawner.storage_pvc_ensure = True
+    c.KubeSpawner.delete_pvc = False
+    c.KubeSpawner.storage_class = "localpath"
+    c.KubeSpawner.pvc_name_template = "pvc-{username}"
+    c.KubeSpawner.storage_capacity = "8Gi"
+
+    c.KubeSpawner.volume_mounts = [
+        {
+            "name": "pvc-{username}",
+            "mountPath": "/home/jovyan/work",
+        },
+        {
+            "name": "gurobi",
+            "mountPath": "/opt/gurobi/gurobi.lic",
+            "subPath": "gurobi.lic",
+        },
+    ]
+    c.KubeSpawner.volumes = [
+        {
+            "name": "pvc-{username}",
+            "persistentVolumeClaim": {"claimName": "pvc-{username}"},
+        },
+        {
+            "name": "gurobi",
+            "secret": {"secretName": "gurobi"},
+        },
+    ]
+
+    c.KubeSpawner.extra_container_config = { "envFrom": [ { "secretRef": { "name": "ampl" } } ] }
+
+    if os.path.exists("/proc/driver/nvidia/version") or os.path.exists("/sys/module/nvidia/version"):
+        c.KubeSpawner.extra_pod_config = {
+            "runtimeClassName": "nvidia",
+        }
+
+    with open("/etc/jupyterhub/profiles/profiles_rlinfati.yaml") as f:
+        PROFILE_RLINFATI = yaml.safe_load(f)
+
+    with open("/etc/jupyterhub/profiles/profiles_jupyter.yaml") as f:
+        PROFILE_JUPYTER = yaml.safe_load(f)
+
+    with open("/etc/jupyterhub/profiles/profiles_cuda.yaml") as f:
+        PROFILE_CUDA = yaml.safe_load(f)
+
+    c.KubeSpawner.profile_list = [
+        {
+            "display_name": "(BestEffort) Jupyter/rlinfati/lab0 Notebook",
+            **PROFILE_RLINFATI
+        },
+        {
+            "display_name": "(BestEffort) Jupyter Notebook",
+            **PROFILE_JUPYTER
+        },
+    ]
+
+    if os.path.exists("/proc/driver/nvidia/version") or os.path.exists("/sys/module/nvidia/version"):
+        c.KubeSpawner.profile_list += [
+            {
+                "display_name": "(BestEffort) CUDA Notebook - 1gpu",
+                "kubespawner_override": {
+                    "extra_resource_limits": {"nvidia.com/gpu": 1},
+                    "privileged": True,
+                    "allow_privilege_escalation": True,
+                },
+                **PROFILE_CUDA
+            },
+        ]
+
+    if os.path.exists("/etc/jupyterhub/profiles/burstable_1cpu_7gb"):
+        c.KubeSpawner.profile_list += [
+            {
+                "display_name": "(Burstable) Jupyter/rlinfati/lab0 Notebook - 1cpu/7gb",
+                "kubespawner_override": {
+                    "cpu_guarantee": 1,
+                    "mem_guarantee": "7G",
+                },
+                **PROFILE_RLINFATI
+            },
+        ]
+
+    if os.path.exists("/etc/jupyterhub/profiles/burstable_4cpu_30gb"):
+        c.KubeSpawner.profile_list += [
+            {
+                "display_name": "(Burstable) Jupyter/rlinfati/lab0 Notebook - 4cpu/30gb",
+                "kubespawner_override": {
+                    "cpu_guarantee": 4,
+                    "mem_guarantee": "30G",
+                },
+                **PROFILE_RLINFATI
+            },
+        ]
+
+    if os.path.exists("/etc/jupyterhub/profiles/burstable_12cpu_120gb"):
+        c.KubeSpawner.profile_list += [
+            {
+                "display_name": "(Burstable) Jupyter/rlinfati/lab0 Notebook - 12cpu/120gb",
+                "kubespawner_override": {
+                    "cpu_guarantee": 12,
+                    "mem_guarantee": "120G",
+                },
+                **PROFILE_RLINFATI
+            },
+        ]
+
+    c.JupyterHub.services = [ { "name": "jupyterhub-idle-culler-service",
+                                "command": [sys.executable, "-m", "jupyterhub_idle_culler", "--timeout=14400"],
+                                "admin": True } ]
+
+    # eof

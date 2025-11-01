@@ -1,0 +1,40 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jupyterhub
+  namespace: jupyterhub
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jhub
+  template:
+    metadata:
+      labels:
+        app: jhub
+    spec:
+      serviceAccountName: jhub
+      containers:
+      - name: jhub-container
+        image: ghcr.io/rlinfati/lab0-container:jupyter-hub
+        volumeMounts:
+        - name: jhub-oauth
+          mountPath: /etc/jupyterhub/secrets
+        - name: jhub-profiles
+          mountPath: /etc/jupyterhub/profiles
+        - name: jhub-config
+          mountPath: /etc/jupyterhub/jupyterhub_config.py
+          subPath: jupyterhub_config.py
+        ports:
+        - containerPort: 8000
+        - containerPort: 8001
+      volumes:
+      - name: jhub-oauth
+        secret:
+          secretName: jhub.oauth
+      - name: jhub-profiles
+        configMap:
+          name: jhub.profiles
+      - name: jhub-config
+        configMap:
+          name: jhub.config

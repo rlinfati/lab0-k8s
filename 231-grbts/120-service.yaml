@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: grbts
+  namespace: grbts
+spec:
+  type: ClusterIP
+  selector:
+    app: grbts
+  ports:
+  - port: 41954
+    protocol: TCP
+    targetPort: 41954

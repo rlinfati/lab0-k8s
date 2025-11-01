@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ikev2
+  namespace: strongswan
+data:
+  ikev2.conf: |
+    # /etc/strongswan/swanctl/conf.d/ikev2.conf
