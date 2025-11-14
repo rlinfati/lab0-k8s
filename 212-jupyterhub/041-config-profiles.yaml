@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: jhub.profiles
+  namespace: jupyterhub
+data:
+  profiles_rlinfati.yaml: |
+    profile_options:
+      image:
+        display_name: "Container:"
+        choices:
+          julia-112:
+            display_name: "rlinfati/lab0 Julia 1.12"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.12"
+          julia-110:
+            display_name: "rlinfati/lab0 Julia 1.10 LTS"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.10"
+          anaconda:
+            display_name: "rlinfati/lab0 Anaconda latest"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-lab-anaconda-latest"
+          devcpp:
+            display_name: "rlinfati/lab0 devcpp latest"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-lab-devcpp-latest"
+          base:
+            display_name: "rlinfati/lab0 base latest"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-lab-base-latest"
+  profiles_jupyter.yaml: |
+    profile_options:
+      image:
+        display_name: "Container:"
+        choices:
+          julia-notebook:
+            display_name: "Jupyter Notebook Julia"
+            kubespawner_override:
+              image: "quay.io/jupyter/julia-notebook:latest"
+          scipy-notebook:
+            display_name: "Jupyter Notebook SciPy"
+            kubespawner_override:
+              image: "quay.io/jupyter/scipy-notebook:latest"
+          r-notebook:
+            display_name: "Jupyter Notebook R"
+            kubespawner_override:
+              image: "quay.io/jupyter/r-notebook:latest"
+          tensorflow-notebook:
+            display_name: "Jupyter Notebook TensorFlow"
+            kubespawner_override:
+              image: "quay.io/jupyter/tensorflow-notebook:latest"
+          pytorch-notebook:
+            display_name: "Jupyter Notebook PyTorch"
+            kubespawner_override:
+              image: "quay.io/jupyter/pytorch-notebook:latest"
+  profiles_cuda.yaml: |
+    profile_options:
+      image:
+        display_name: "Container:"
+        choices:
+          juliacuda-112:
+            display_name: "rlinfati/lab0 Julia + CUDA"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.12"
+          anaconda-cuda:
+            display_name: "rlinfati/lab0 Anaconda + CUDA"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-lab-anaconda-latest"
+          nvpytorch:
+            display_name: "NVIDIA PyTorch"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-nvcr-pytorch"
+          nvtensorflow:
+            display_name: "NVIDIA TensorFlow"
+            kubespawner_override:
+              image: "ghcr.io/rlinfati/lab0-container:jupyter-nvcr-tensorflow"
+          pytorch-notebook:
+            display_name: "Jupyter Notebook PyTorch-cuda12"
+            kubespawner_override:
+              image: "quay.io/jupyter/pytorch-notebook:cuda12-latest"
+          tensorflow-notebook:
+            display_name: "Jupyter Notebook TensorFlow-cuda"
+            kubespawner_override:
+              image: "quay.io/jupyter/tensorflow-notebook:cuda-latest"

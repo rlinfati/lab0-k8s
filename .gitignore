@@ -1,0 +1,4 @@
+# .gitignore
+212-jupyterhub/031-secret-oauth-private.yaml
+212-jupyterhub/032-secret-licenses-private.yaml
+231-grbts/110-secret-license-private.yaml

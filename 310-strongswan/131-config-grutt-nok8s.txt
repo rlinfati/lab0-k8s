@@ -1,0 +1,23 @@
+# ikev2-grutt.txt
+
+sudo dnf install https://dl.fedoraproject.org/pub/epel/9/Everything/x86_64/Packages/s/strongswan-5.9.11-1.el9.x86_64.rpm
+
+sudo python3 -m venv /opt/certbot/
+sudo /opt/certbot/bin/pip install --no-cache-dir --upgrade pip
+sudo /opt/certbot/bin/pip install --no-cache-dir certbot
+sudo /opt/certbot/bin/certbot certonly -d grutt.menoscero.com --standalone --agree-tos
+sudo /opt/certbot/bin/certbot certificates
+
+sudo /opt/certbot/bin/certbot renew --deploy-hook 'systemctl reload strongswan'
+
+curl https://rlinfati.github.io/m0-0ca-2024.crt -o /etc/strongswan/swanctl/x509ca/m0-0ca-2024.crt
+sudo ln -sf /etc/letsencrypt/live/grutt.menoscero.com/privkey.pem /etc/strongswan/swanctl/private/le-ikev2-srv.key
+sudo ln -sf /etc/letsencrypt/live/grutt.menoscero.com/cert.pem    /etc/strongswan/swanctl/x509/le-ikev2-srv.crt
+sudo ln -sf /etc/letsencrypt/live/grutt.menoscero.com/chain.pem   /etc/strongswan/swanctl/x509ca/le-ikev2-chain.crt
+
+sudo sed -i s/default.=.1/default=2\\n\\tnet=1\\n\\tenc=1\\n\\tasn=1\\n\\tjob=1\\n\\tike_name=yes/g /etc/strongswan/strongswan.d/charon-systemd.conf 
+
+sudo vi /etc/strongswan/swanctl/conf.d/ikev2-grutt.conf
+sudo systemctl enable --now strongswan
+
+sudo systemctl restart strongswan

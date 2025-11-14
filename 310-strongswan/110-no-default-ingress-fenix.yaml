@@ -1,0 +1,26 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-155fenix
+  namespace: ingress-nginx
+  annotations:
+    metallb.io/loadBalancerIPs: 146.83.193.155
+    metallb.io/allow-shared-ip: 4db62740-043f-4f66-8225-5954828e4bf4
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/component: controller
+    app.kubernetes.io/instance: ingress-nginx
+    app.kubernetes.io/name: ingress-nginx
+  ports:
+  - appProtocol: http
+    name: http
+    port: 80
+    protocol: TCP
+    targetPort: http
+  - appProtocol: https
+    name: https
+    port: 443
+    protocol: TCP
+    targetPort: https
+  allocateLoadBalancerNodePorts: false
