@@ -2,6 +2,10 @@
 
 set -ex
 
+sudo firewall-cmd --permanent --zone=public --add-service=http --add-service=https
+sudo firewall-cmd             --zone=public --add-service=http --add-service=https
+sudo firewall-cmd --zone=public --list-all
+
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/refs/heads/main/deploy/static/provider/cloud/deploy.yaml
 
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
