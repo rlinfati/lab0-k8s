@@ -9,7 +9,8 @@ data:
     connections {
         pubkey-eaptls {
             version = 2
-            pools = pool-ipv4, pool-ipv6
+            #pools = pool-ipv4, pool-ipv6
+            pools = pool-ipv4
             local {
                 auth = pubkey
                 certs = le-ikev2-srv.crt
@@ -21,7 +22,8 @@ data:
             }
             children {
                 tunnel-oraclenet {
-                    local_ts = dynamic, 0.0.0.0/0, ::/0
+                    #local_ts = dynamic, 0.0.0.0/0, ::/0
+                    local_ts = dynamic, 0.0.0.0/0
                     mode = tunnel
                 }
             }
