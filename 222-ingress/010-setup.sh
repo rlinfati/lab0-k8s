@@ -12,11 +12,11 @@ kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"replace","path":"/spec/type","value":"ClusterIP"}
 ]'
 
-# grujh
+# cabhs.srv
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
-  {"op":"add","path":"/spec/externalIPs","value":["172.30.101.187"]}
+  {"op":"add","path":"/spec/externalIPs","value":["192.99.45.132"]}
 ]'
-# valjh
+# clval.vps
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"add","path":"/spec/externalIPs","value":["172.30.16.109"]}
 ]'

@@ -5,7 +5,7 @@ metadata:
   namespace: strongswan
 data:
   ikev2.conf: |
-    # /etc/strongswan/swanctl/conf.d/ikev2-grutt.conf
+    # /etc/strongswan/swanctl/conf.d/ikev2-cabhs.conf
     connections {
         pubkey-eaptls {
             version = 2
@@ -13,7 +13,7 @@ data:
             local {
                 auth = pubkey
                 certs = le-ikev2-srv.crt
-                id = grutt.menoscero.com
+                id = clval.vps.menoscero.com
             }
             remote {
                 auth = eap-tls

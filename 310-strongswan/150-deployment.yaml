@@ -36,9 +36,11 @@ spec:
         - name: isakmp
           containerPort: 500
           protocol: UDP
+          #hostPort: 500
         - name: nat-t
           containerPort: 4500
           protocol: UDP
+          #hostPort: 4500
         volumeMounts:
         - name: ikev2
           mountPath: /etc/strongswan/swanctl/conf.d/ikev2.conf

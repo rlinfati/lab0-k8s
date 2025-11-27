@@ -65,11 +65,6 @@ data:
 
     c.KubeSpawner.extra_container_config = { "envFrom": [ { "secretRef": { "name": "ampl" } } ] }
 
-    if os.path.exists("/proc/driver/nvidia/version") or os.path.exists("/sys/module/nvidia/version"):
-        c.KubeSpawner.extra_pod_config = {
-            "runtimeClassName": "nvidia",
-        }
-
     with open("/etc/jupyterhub/profiles/profiles_rlinfati.yaml") as f:
         PROFILE_RLINFATI = yaml.safe_load(f)
 
@@ -96,8 +91,6 @@ data:
                 "display_name": "(BestEffort) CUDA Notebook - 1gpu",
                 "kubespawner_override": {
                     "extra_resource_limits": {"nvidia.com/gpu": 1},
-                    "privileged": True,
-                    "allow_privilege_escalation": True,
                 },
                 **PROFILE_CUDA
             },

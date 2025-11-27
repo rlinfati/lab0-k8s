@@ -15,15 +15,29 @@ spec:
       priorityClassName: "system-node-critical"
       runtimeClassName: nvidia
       containers:
-      - image: nvcr.io/nvidia/k8s-device-plugin:v0.17.3
+      - image: nvcr.io/nvidia/k8s-device-plugin:v0.18.0
         # FIX: https://catalog.ngc.nvidia.com/orgs/nvidia/containers/k8s-device-plugin/tags
         name: nvidia-device-plugin
         securityContext:
           privileged: true
+        env:
+          - name: DEVICE_LIST_STRATEGY
+            value: "cdi-cri"
         volumeMounts:
+        - name: driver-root
+          mountPath: /driver-root
+          readOnly: true
         - name: device-plugin
           mountPath: /var/lib/kubelet/device-plugins
+        - name: var-run-cdi
+          mountPath: /var/run/cdi
       volumes:
+      - name: driver-root
+        hostPath:
+          path: /
       - name: device-plugin
         hostPath:
           path: /var/lib/kubelet/device-plugins
+      - name: var-run-cdi
+        hostPath:
+          path: /var/run/cdi

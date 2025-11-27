@@ -14,17 +14,17 @@
     tls:
       - hosts:
           - jupyterhub.home.arpa
-          #- synco.ubb.menoscero.com
-          #- cosyn.ubb.menoscero.com
-          #- grujh.menoscero.com
-          #- valjh.menoscero.com
+          #- lab0arm.m0.cl
+          #- lab0x86.m0.cl
+          #- lab017a.m0.cl
+          #- lab023a.m0.cl
         secretName: tls
     rules:
       - host: jupyterhub.home.arpa
-      #- host: synco.ubb.menoscero.com
-      #- host: cosyn.ubb.menoscero.com
-      #- host: grujh.menoscero.com
-      #- host: valjh.menoscero.com
+      #- host: lab0arm.m0.cl
+      #- host: lab0x86.m0.cl
+      #- host: lab017a.m0.cl
+      #- host: lab023a.m0.cl
         http:
           paths:
             - path: /

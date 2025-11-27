@@ -1,0 +1,39 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ikev2
+  namespace: strongswan
+data:
+  ikev2.conf: |
+    # /etc/strongswan/swanctl/conf.d/ikev2-cabhs.conf
+    connections {
+        pubkey-eaptls {
+            version = 2
+            pools = pool-ipv4, pool-ipv6
+            local {
+                auth = pubkey
+                certs = le-ikev2-srv.crt
+                id = cabhs.srv.menoscero.com
+            }
+            remote {
+                auth = eap-tls
+                eap_id = %any
+            }
+            children {
+                tunnel-oraclenet {
+                    local_ts = dynamic, 0.0.0.0/0, ::/0
+                    mode = tunnel
+                }
+            }
+        }
+    }
+    pools {
+        pool-ipv4 {
+            addrs = 172.31.101.0/24
+            dns = 1.1.1.1, 8.8.8.8, 9.9.9.9
+        }
+        pool-ipv6 {
+            addrs = fd00::172:31:101:0/112
+            dns = 2606:4700:4700::1111, 2001:4860:4860::8888, 2620:fe::fe
+        }
+    }

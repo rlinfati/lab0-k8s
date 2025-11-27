@@ -9,5 +9,6 @@ sudo podman image prune --all
 sudo podman system prune --all
 sudo podman system reset --force
 sudo podman image ls -a
+sudo kubeadm config images pull
 
 # eof

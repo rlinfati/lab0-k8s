@@ -17,8 +17,12 @@ sudo mokutil --import NVIDIA2019-public_key.der
 # reboot #
 ##########
 
-sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
+sudo vi /etc/nvidia-container-runtime/config.toml
+# runtimes = ["crun", "runc", "docker-runc"]
+
+# sudo nvidia-ctk cdi generate --output=/etc/cdi/nvidia.yaml
 sudo nvidia-ctk runtime configure --runtime=crio --set-as-default=false --config=/etc/crio/crio.conf.d/99-nvidia.conf
+sudo nvidia-ctk config --in-place --set nvidia-container-runtime.mode=auto
 sudo systemctl restart crio
 
 # eof

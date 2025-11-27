@@ -2,3 +2,9 @@
 212-jupyterhub/031-secret-oauth-private.yaml
 212-jupyterhub/032-secret-licenses-private.yaml
 231-grbts/110-secret-license-private.yaml
+320-cloudflare/111-secret-nuc0x.yaml
+320-cloudflare/111-secret-nuc4x.yaml
+320-cloudflare/111-secret-clval.yaml
+320-cloudflare/111-secret-cabhs.yaml
+320-cloudflare/111-secret-synco.yaml
+320-cloudflare/111-secret-cosyn.yaml

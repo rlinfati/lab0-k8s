@@ -12,6 +12,4 @@ kubectl -n grbts get sc,pv,pvc
 
 kubectl -n grbts logs deployment/grbts
 
-# TODO: https://docs.cilium.io/en/stable/network/pod-mac-address/
-
 # eof

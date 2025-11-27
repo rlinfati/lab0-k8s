@@ -13,7 +13,6 @@ kubectl -n kube-nvidia get sc,pv,pvc
 kubectl -n kube-nvidia logs daemonset.apps/nvidia-device-plugin
 kubectl describe node
 
-kubectl -n kube-nvidia logs     pod -l name=nvidia-device-plugin
 kubectl -n kube-nvidia delete   pod -l name=nvidia-device-plugin
 kubectl -n kube-nvidia describe pod -l name=nvidia-device-plugin
 

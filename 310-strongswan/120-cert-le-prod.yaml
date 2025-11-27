@@ -7,8 +7,9 @@ spec:
   secretName: tls
   dnsNames:
   - server.home.arpa
-  #- grutt.menoscero.com
   #- fenix.ubb.menoscero.com
+  #- cabhs.srv.menoscero.com
+  #- clval.vps.menoscero.com
   issuerRef:
     kind: ClusterIssuer
     name: le-prod
