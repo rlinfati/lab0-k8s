@@ -1,0 +1,163 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: localpath
+  annotations:
+    defaultVolumeType: "local"
+provisioner: rancher.io/local-path
+parameters:
+  pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+reclaimPolicy: Retain
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: localpath
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: localpath
+  namespace: localpath
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: localpath
+  namespace: localpath
+rules:
+  - apiGroups: [""]
+    resources: ["pods"]
+    verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: localpath
+  namespace: localpath
+rules:
+  - apiGroups: [""]
+    resources: ["nodes", "persistentvolumeclaims", "configmaps", "pods", "pods/log"]
+    verbs: ["get", "list", "watch"]
+  - apiGroups: [""]
+    resources: ["persistentvolumes"]
+    verbs: ["get", "list", "watch", "create", "patch", "update", "delete"]
+  - apiGroups: [""]
+    resources: ["events"]
+    verbs: ["create", "patch"]
+  - apiGroups: ["storage.k8s.io"]
+    resources: ["storageclasses"]
+    verbs: ["get", "list", "watch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: localpath
+  namespace: localpath
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: localpath
+subjects:
+  - kind: ServiceAccount
+    name: localpath
+    namespace: localpath
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: localpath
+  namespace: localpath
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: localpath
+subjects:
+  - kind: ServiceAccount
+    name: localpath
+    namespace: localpath
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: local-path-config
+  namespace: localpath
+data:
+  config.json: |-
+    {
+            "nodePathMap":[ {
+                    "node": "DEFAULT_PATH_FOR_NON_LISTED_NODES",
+                    "paths": ["/home/localpath/"]
+            } ]
+    }
+  setup: |-
+    #!/bin/sh
+    set -eu
+    mkdir -m 0755 -p "$VOL_DIR"
+    chown 1000:100 "$VOL_DIR" || true
+    chcon -R -u system_u -r object_r -t container_file_t -l s0 "$VOL_DIR" || true
+  teardown: |-
+    #!/bin/sh
+    set -eu
+    rm -rf "$VOL_DIR"
+  helperPod.yaml: |-
+    apiVersion: v1
+    kind: Pod
+    metadata:
+      name: helper-pod
+    spec:
+      priorityClassName: system-node-critical
+      tolerations:
+        - key: node.kubernetes.io/disk-pressure
+          operator: Exists
+          effect: NoSchedule
+      containers:
+      - name: helper-pod
+        image: registry.access.redhat.com/ubi10/ubi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: localpath
+  namespace: localpath
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: localpath
+  template:
+    metadata:
+      labels:
+        app: localpath
+    spec:
+      serviceAccountName: localpath
+      containers:
+        - name: localpath-container
+          image: docker.io/rancher/local-path-provisioner:v0.0.32 # FIX v0.0.32
+          command:
+            - local-path-provisioner
+            - start
+            - --config
+            - /etc/config/config.json
+          resources:
+            requests:
+              cpu: 50m
+              memory: 16Mi
+          volumeMounts:
+            - name: local-path-config
+              mountPath: /etc/config/
+          env:
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: SERVICE_ACCOUNT_NAME
+              value: localpath
+            - name: CONFIG_MOUNT_PATH
+              value: /etc/config/
+      volumes:
+        - name: local-path-config
+          configMap:
+            name: local-path-config

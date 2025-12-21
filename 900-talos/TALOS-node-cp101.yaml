@@ -1,0 +1,13 @@
+# cp101.yaml
+version: v1alpha1
+machine:
+    network:
+        hostname: cp101
+        interfaces:
+          - deviceSelector:
+              physical: yes
+            addresses:
+              - 172.16.91.101/24
+            routes:
+              - network: 0.0.0.0/0
+                gateway: 172.16.91.2  

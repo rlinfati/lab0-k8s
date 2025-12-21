@@ -1,0 +1,18 @@
+# EPHEMERAL.yaml
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+provisioning:
+  maxSize: 128GB
+---
+# u-localpath.yaml
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: localpath
+provisioning:
+  diskSelector:
+    match: "system_disk"
+    #match: "system_disk"
+    #match: "!system_disk"
+  maxSize: 128GB
+# /var/mnt/localpath

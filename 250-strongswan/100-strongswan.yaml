@@ -1,0 +1,203 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: strongswan
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tls
+  namespace: strongswan
+spec:
+  secretName: tls
+  dnsNames:
+  - server.home.arpa
+  #- fenix.ubb.menoscero.com
+  #- radio.ubb.menoscero.com
+  #- reloj.ubb.menoscero.com
+  #- cabhs.srv.menoscero.com
+  #- clval.vps.menoscero.com
+  issuerRef:
+    kind: ClusterIssuer
+    name: le-prod
+  privateKey:
+    algorithm: ECDSA
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: x509ca
+  namespace: strongswan
+data:
+  m0-0ca-2024.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIBQTCB6KADAgECAghrFT7O26tv4DAKBggqhkjOPQQDAjAWMRQwEgYDVQQDEwtt
+    MC0wQ0EtMjAyNDAeFw0yNDAxMDEwMDAwMDBaFw0zNTEyMzEyMzU5NTlaMBYxFDAS
+    BgNVBAMTC20wLTBDQS0yMDI0MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEdACI
+    5qAj3IJJDS8aOtfJfcCrOLzBahwYmaNaLJi4x8//22A2mXqqxeZ6VG2jLuhQeGuK
+    CfrwIWpK8h+OjaF+HKMgMB4wDwYDVR0TBAgwBgEB/wIBADALBgNVHQ8EBAMCAgQw
+    CgYIKoZIzj0EAwIDSAAwRQIgeyABEh/DgVV1bH3mIfUOYWWyWh+D7ZDuxMqXwWgC
+    skMCIQCkIgbHSWE6XF+yHAznOyAEcbRkHDm51O4whkYufAbG3Q==
+    -----END CERTIFICATE-----
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ikev2
+  namespace: strongswan
+data:
+  ikev2.conf: |
+    # /etc/strongswan/swanctl/conf.d/ikev2.conf
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nftables
+  namespace: strongswan
+data:
+  nat-masquerade.nft: |
+    # /etc/nftables/nat-masquerade.nft
+
+    ## NAT44
+    table ip nat {
+      chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        masquerade;
+      }
+    }
+
+    ## NAT66
+    table ip6 nat {
+      chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        masquerade;
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: swan
+  namespace: strongswan
+spec:
+  type: ClusterIP
+  selector:
+    app: swan
+  ports:
+  - name: isakmp
+    port: 500
+    protocol: UDP
+    targetPort: 500
+  - name: nat-t
+    port: 4500
+    protocol: UDP
+    targetPort: 4500
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swan
+  namespace: strongswan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swan
+  template:
+    metadata:
+      labels:
+        app: swan
+    spec:
+      initContainers:
+      - name: cert
+        image: registry.access.redhat.com/ubi10/ubi
+        command:
+        - sh
+        - -c
+        - |
+          awk '/-----BEGIN CERTIFICATE-----/ {n++} {if (n>1) print > "/out/chain.crt"}' /in/tls.crt 
+        volumeMounts:
+        - name: chain
+          mountPath: /out/
+        - name: tls
+          mountPath: /in/tls.crt
+          subPath: tls.crt
+      containers:
+      - name: swan
+        image: ghcr.io/rlinfati/lab0-container:strongswan
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -e
+            kick() {
+              nft --file /etc/nftables/nat-masquerade.nft || true
+              /usr/bin/swanctl --load-all || true
+            }
+            (
+              while true; do
+                if [ -S /run/strongswan/charon.vici ]; then
+                  kick
+                  sleep 3600
+                else
+                  sleep 1
+                fi
+              done
+            ) &
+            exec /usr/libexec/strongswan/charon \
+              --debug-mgr 2 \
+              --debug-ike 2 \
+              --debug-chd 2 \
+              --debug-cfg 2 \
+              --debug-knl 2 \
+              --debug-tls 2 \
+              --debug-esp 2
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 50m
+            memory: 64Mi
+        ports:
+        - name: isakmp
+          containerPort: 500
+          protocol: UDP
+          hostPort: 500
+        - name: nat-t
+          containerPort: 4500
+          protocol: UDP
+          hostPort: 4500
+        volumeMounts:
+        - name: nftables
+          mountPath: /etc/nftables/nat-masquerade.nft
+          subPath: nat-masquerade.nft
+        - name: ikev2
+          mountPath: /etc/strongswan/swanctl/conf.d/ikev2.conf
+          subPath: ikev2.conf
+        - name: x509ca
+          mountPath: /etc/strongswan/swanctl/x509ca/m0-0ca-2024.crt
+          subPath: m0-0ca-2024.crt
+        - name: chain
+          mountPath: /etc/strongswan/swanctl/x509ca/le-ikev2-chain.crt
+          subPath: chain.crt
+        - name: tls
+          mountPath: /etc/strongswan/swanctl/x509/le-ikev2-srv.crt
+          subPath: tls.crt
+        - name: tls
+          mountPath: /etc/strongswan/swanctl/private/le-ikev2-srv.key
+          subPath: tls.key
+      volumes:
+      - name: nftables
+        configMap:
+          name: nftables
+      - name: ikev2
+        configMap:
+          name: ikev2
+      - name: x509ca
+        configMap:
+          name: x509ca
+      - name: tls
+        secret:
+          secretName: tls
+      - name: chain
+        emptyDir: {}

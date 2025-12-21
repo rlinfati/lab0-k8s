@@ -1,0 +1,38 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ikev2
+  namespace: strongswan
+data:
+  ikev2.conf: |
+    # /etc/strongswan/swanctl/conf.d/ikev2-fenix.conf
+    connections {
+        pubkey-eaptls {
+            version = 2
+            pools = pool-ipv4
+            local {
+                auth = pubkey
+                certs = le-ikev2-srv.crt
+                id = fenix.ubb.menoscero.com
+            }
+            remote {
+                auth = eap-tls
+                eap_id = %any
+            }
+            children {
+                tunnel-gwnet {
+                    local_ts = dynamic, 0.0.0.0/0
+                    mode = tunnel
+                }
+            }
+        }
+    }
+    pools {
+        pool-ipv4 {
+            addrs = 172.31.101.0/24
+            dns = 10.96.0.10
+        }
+        pool-ipv6 {
+            addrs = fd00::172:31:101:0/112
+        }
+    }

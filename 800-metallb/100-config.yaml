@@ -1,0 +1,29 @@
+apiVersion: metallb.io/v1beta1
+kind: IPAddressPool
+metadata:
+  name: ubbip-vlan130
+  namespace: metallb-system
+spec:
+  addresses:
+  - 146.83.193.150/32
+  - 146.83.193.151/32
+  - 146.83.193.152/32
+  - 146.83.193.153/32
+  - 146.83.193.154/32
+  - 146.83.193.155/32
+  - 146.83.193.156/32
+  - 146.83.193.157/32
+  - 146.83.193.158/32
+  - 146.83.193.159/32
+  autoAssign: false
+---
+apiVersion: metallb.io/v1beta1
+kind: L2Advertisement
+metadata:
+  name: l2-ubb-vlan130
+  namespace: metallb-system
+spec:
+  ipAddressPools:
+  - ubbip-vlan130
+  interfaces:
+  - breth0
