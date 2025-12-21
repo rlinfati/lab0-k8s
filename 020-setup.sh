@@ -34,7 +34,6 @@ kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/
 kubectl get cm -n kube-system kubeadm-config -o yaml | grep Subnet
 
 kubectl get all -A
-
 kubectl describe node
 sudo crictl stats
 

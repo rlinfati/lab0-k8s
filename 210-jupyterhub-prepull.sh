@@ -5,13 +5,6 @@ set -ex
 sudo podman image prune --force
 sudo podman image ls -a | sort
 
-sudo podman pull --quiet docker.io/cloudflare/cloudflared:latest
-sudo podman image prune --force
-
-sudo podman pull --quiet ghcr.io/rlinfati/lab0-container:strongswan
-sudo podman pull --quiet ghcr.io/rlinfati/lab0-container:grbts
-sudo podman image prune --force
-
 sudo podman pull --quiet ghcr.io/rlinfati/lab0-container:jupyter-hub
 sudo podman pull --quiet ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.13
 sudo podman pull --quiet ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.12
@@ -24,7 +17,6 @@ sudo podman image prune --force
 if [[ -c /dev/nvidiactl ]]; then
     sudo podman pull --quiet ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.12
     sudo podman pull --quiet ghcr.io/rlinfati/lab0-container:jupyter-nvcr-pytorch
-    sudo podman pull --quiet ghcr.io/rlinfati/lab0-container:jupyter-nvcr-tensorflow
     sudo podman pull --quiet quay.io/jupyter/pytorch-notebook:cuda12-latest
     sudo podman pull --quiet quay.io/jupyter/tensorflow-notebook:cuda-latest
     sudo podman image prune --force
@@ -39,16 +31,5 @@ sudo podman image prune --force
 
 sudo podman image prune --force
 sudo podman image ls -a | sort
-
-exit 0
-
-kubectl -n cloudflared delete pod --all
-kubectl -n strongswan  delete pod --all
-kubectl -n grbts       delete pod --all
-kubectl -n jupyterhub  delete pod --all
-sudo podman image prune --force
-sudo podman image ls -a | sort
-
-exit 0
 
 # eof

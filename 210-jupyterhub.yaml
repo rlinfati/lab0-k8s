@@ -259,12 +259,11 @@ data:
         <option value="quay.io/jupyter/pytorch-notebook:cuda12-latest">                  [jupyter] PyTorch</option>
         <option value="quay.io/jupyter/tensorflow-notebook:cuda-latest">                 [jupyter] TensorFlow</option>
         <option value="ghcr.io/rlinfati/lab0-container:jupyter-nvcr-pytorch">            [nvidia]  PyTorch</option>
-        <option value="ghcr.io/rlinfati/lab0-container:jupyter-nvcr-tensorflow">         [nvidia]  TensorFlow</option>
         </optgroup>
     """ if hasNVIDIA else ""
 
     def spawner_cpu():
-        values = [1, 2] + list(range(4, CPUtotal//2 + 1, 4)) # FIX: hyperthreading
+        values = [1, 2] + list(range(4, CPUtotal//2 + 1, 4))
         return "\n".join(
             f'<option value="{i}">{i} CPU</option>'
             for i in values
@@ -394,13 +393,13 @@ metadata:
   name: api
   namespace: jupyterhub
 spec:
+  type: ClusterIP
   selector:
     app: jhub
   ports:
   - protocol: TCP
     port: 8001
     targetPort: 8001
-  type: ClusterIP
 ---
 apiVersion: apps/v1
 kind: Deployment

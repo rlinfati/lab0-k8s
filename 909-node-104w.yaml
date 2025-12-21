@@ -1,13 +1,13 @@
-# cp101.yaml
+# n104w.yaml
 version: v1alpha1
 machine:
     network:
-        hostname: cp101
+        hostname: n104w
         interfaces:
           - deviceSelector:
               physical: yes
             addresses:
-              - 172.16.91.101/24
+              - 172.16.91.104/24
             routes:
               - network: 0.0.0.0/0
                 gateway: 172.16.91.2  

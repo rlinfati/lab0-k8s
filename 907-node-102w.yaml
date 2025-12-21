@@ -1,0 +1,13 @@
+# n102w.yaml
+version: v1alpha1
+machine:
+    network:
+        hostname: n102w
+        interfaces:
+          - deviceSelector:
+              physical: yes
+            addresses:
+              - 172.16.91.102/24
+            routes:
+              - network: 0.0.0.0/0
+                gateway: 172.16.91.2  

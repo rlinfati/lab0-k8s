@@ -1,0 +1,14 @@
+#!/bin/sh
+
+set -ex
+
+sudo podman image prune --force
+sudo podman image ls -a | sort
+
+sudo podman pull --quiet ghcr.io/tailscale/tailscale:latest
+sudo podman image prune --force
+
+sudo podman image prune --force
+sudo podman image ls -a | sort
+
+# eof

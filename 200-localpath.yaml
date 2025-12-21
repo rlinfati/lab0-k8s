@@ -135,7 +135,8 @@ spec:
       serviceAccountName: localpath
       containers:
         - name: localpath-container
-          image: docker.io/rancher/local-path-provisioner:v0.0.32 # FIX v0.0.32
+          image: docker.io/rancher/local-path-provisioner:v0.0.32
+          # FIX: https://hub.docker.com/r/rancher/local-path-provisioner/tags
           command:
             - local-path-provisioner
             - start

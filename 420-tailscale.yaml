@@ -1,0 +1,102 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: tailscale
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: authkey
+  namespace: tailscale
+stringData:
+  TS_HOSTNAME: "hostn.ame"
+  TS_AUTHKEY: abcdefghijklmnopqrstuvwxyz1234567890
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: tailscale
+  namespace: tailscale
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: tailscale
+  namespace: tailscale
+rules:
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create"]
+- apiGroups: [""]
+  resourceNames: ["authkey"]
+  resources: ["secrets"]
+  verbs: ["get", "update", "patch"]
+- apiGroups: [""]
+  resources: ["events"]
+  verbs: ["get", "create", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: tailscale
+  namespace: tailscale
+subjects:
+- kind: ServiceAccount
+  name: "tailscale"
+roleRef:
+  kind: Role
+  name: tailscale
+  apiGroup: rbac.authorization.k8s.io
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tailscale
+  namespace: tailscale
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      pod: tailscale
+  template:
+    metadata:
+      labels:
+        pod: tailscale
+    spec:
+      serviceAccountName: tailscale
+      containers:
+        - image: ghcr.io/tailscale/tailscale:latest
+          name: tailscale          
+          securityContext:
+            privileged: true
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+          env:
+            - name: TS_KUBE_SECRET
+              value: "authkey"
+            - name: TS_USERSPACE
+              value: "false"
+            - name: TS_DEBUG_FIREWALL_MODE
+              value: "auto"
+            - name: TS_EXTRA_ARGS
+              value: "--advertise-exit-node"
+            - name: TS_HOSTNAME
+              valueFrom:
+                secretKeyRef:
+                  name: authkey
+                  key: TS_HOSTNAME
+            - name: TS_AUTHKEY
+              valueFrom:
+                secretKeyRef:
+                  name: authkey
+                  key: TS_AUTHKEY
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_UID
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.uid

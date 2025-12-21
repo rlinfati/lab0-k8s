@@ -1,13 +1,13 @@
-# w112.yaml
+# n101cp.yaml
 version: v1alpha1
 machine:
     network:
-        hostname: w112
+        hostname: n101cp
         interfaces:
           - deviceSelector:
               physical: yes
             addresses:
-              - 172.16.91.112/24
+              - 172.16.91.101/24
             routes:
               - network: 0.0.0.0/0
                 gateway: 172.16.91.2  

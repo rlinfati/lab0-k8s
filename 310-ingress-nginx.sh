@@ -18,11 +18,19 @@ kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
 ]'
 # clval.vps
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
-  {"op":"add","path":"/spec/externalIPs","value":["172.30.16.93"]}
+  {"op":"add","path":"/spec/externalIPs","value":["172.30.16.3"]}
 ]'
 # fenix.ubb
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"add","path":"/spec/externalIPs","value":["146.83.193.155"]}
+]'
+# radio.ubb
+kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
+  {"op":"add","path":"/spec/externalIPs","value":["146.83.193.156"]}
+]'
+# reloj.ubb
+kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
+  {"op":"add","path":"/spec/externalIPs","value":["146.83.193.157"]}
 ]'
 # synco.ubb
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[

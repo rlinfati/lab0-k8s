@@ -1,5 +1,12 @@
 # .gitignore
-210-jupyterhub/110-jupyterhub-private.yaml
-240-grbts/110-grbts-private.yaml
-260-cloudflare/110-cloudflare-private.yaml
-900-talos/CLUSTER*
+211-jupyterhub-private.yaml
+221-grbts-private.yaml
+411-cloudflare-private.yaml
+421-tailscale-private.yaml
+901-secrets.yaml
+901-talosconfig
+904-node-101-cp-w.yaml
+905-node-101-cp.yaml
+905-node-102-w.yaml
+905-node-103-w.yaml
+905-node-104-w.yaml

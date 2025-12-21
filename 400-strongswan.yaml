@@ -12,11 +12,11 @@ spec:
   secretName: tls
   dnsNames:
   - server.home.arpa
+  #- cabhs.srv.menoscero.com
+  #- clval.vps.menoscero.com
   #- fenix.ubb.menoscero.com
   #- radio.ubb.menoscero.com
   #- reloj.ubb.menoscero.com
-  #- cabhs.srv.menoscero.com
-  #- clval.vps.menoscero.com
   issuerRef:
     kind: ClusterIssuer
     name: le-prod
@@ -48,6 +48,41 @@ metadata:
 data:
   ikev2.conf: |
     # /etc/strongswan/swanctl/conf.d/ikev2.conf
+    connections {
+        pubkey-eaptls {
+            version = 2
+            pools = pool-ipv4
+            local {
+                auth = pubkey
+                certs = le-ikev2-srv.crt
+                id = server.home.arpa
+                #id = cabhs.srv.menoscero.com
+                #id = clval.vps.menoscero.com
+                #id = fenix.ubb.menoscero.com
+                #id = radio.ubb.menoscero.com
+                #id = reloj.ubb.menoscero.com
+            }
+            remote {
+                auth = eap-tls
+                eap_id = %any
+            }
+            children {
+                tunnel-gwnet {
+                    local_ts = dynamic, 0.0.0.0/0
+                    mode = tunnel
+                }
+            }
+        }
+    }
+    pools {
+        pool-ipv4 {
+            addrs = 172.31.101.0/24
+            dns = 10.96.0.10
+        }
+        pool-ipv6 {
+            addrs = fd00::172:31:101:0/112
+        }
+    }
 ---
 apiVersion: v1
 kind: ConfigMap
