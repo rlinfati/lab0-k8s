@@ -49,7 +49,7 @@ data:
   ikev2.conf: |
     # /etc/strongswan/swanctl/conf.d/ikev2.conf
     connections {
-        pubkey-eaptls {
+        pubkey-eap-tls {
             version = 2
             pools = pool-ipv4
             local {

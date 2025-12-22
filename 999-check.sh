@@ -14,6 +14,7 @@ export K8SNS=ingress-nginx
 export K8SNS=strongswan
 export K8SNS=cloudflared
 export K8SNS=tailscale
+export K8SNS=vlmcsd
 export K8SNS=metallb-system
 
 kubectl -n $K8SNS get secrets,configmap
@@ -53,6 +54,8 @@ kubectl -n tailscale delete pod --all
 kubectl -n tailscale logs deployment/tailscale
 
 kubectl -n metallb-system logs deployment/controller
+
+kubectl -n vlmcsd logs deployment/vlmcsd
 
 sudo podman image prune --force
 sudo podman image ls -a | sort

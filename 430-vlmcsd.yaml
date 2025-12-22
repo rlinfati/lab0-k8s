@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: vlmcsd
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vlmcsd
+  namespace: vlmcsd
+spec:
+  type: ClusterIP
+  selector:
+    app: vlmcsd
+  ports:
+  - port: 1688
+    protocol: TCP
+    targetPort: 1688
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vlmcsd
+  namespace: vlmcsd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vlmcsd
+  template:
+    metadata:
+      labels:
+        app: vlmcsd
+    spec:
+      containers:
+      - name: vlmcsd
+        image: ghcr.io/rlinfati/lab0-container:vlmcsd
+        resources:
+          requests:
+            cpu: 50m
+            memory: 8Mi
+        ports:
+        - containerPort: 1688
+          protocol: TCP
