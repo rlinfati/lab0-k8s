@@ -63,7 +63,7 @@ spec:
           mountPath: /usr/local/sbin/fake-grb0.sh
           subPath: fake-grb0.sh
       containers:
-      - name: grb-ts
+      - name: lab0-grb
         image: ghcr.io/rlinfati/lab0-container:grbts
         resources:
           requests:

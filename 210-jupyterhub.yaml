@@ -145,12 +145,12 @@ data:
     c.KubeSpawner.storage_pvc_ensure = True
     c.KubeSpawner.delete_pvc = False
     c.KubeSpawner.storage_class = "localpath"
-    c.KubeSpawner.pvc_name_template = "pvc-{username}"
+    c.KubeSpawner.pvc_name_template = "{username}"
     c.KubeSpawner.storage_capacity = "8Gi"
 
     c.KubeSpawner.volume_mounts = [
         {
-            "name": "pvc-{username}",
+            "name": "work-{username}",
             "mountPath": "/home/jovyan/work",
         },
         {
@@ -161,8 +161,8 @@ data:
     ]
     c.KubeSpawner.volumes = [
         {
-            "name": "pvc-{username}",
-            "persistentVolumeClaim": {"claimName": "pvc-{username}"},
+            "name": "work-{username}",
+            "persistentVolumeClaim": {"claimName": "{username}"},
         },
         {
             "name": "gurobi",
@@ -418,7 +418,7 @@ spec:
     spec:
       serviceAccountName: jhub
       containers:
-      - name: jhub-container
+      - name: jhub
         image: ghcr.io/rlinfati/lab0-container:jupyter-hub
         resources:
           requests:

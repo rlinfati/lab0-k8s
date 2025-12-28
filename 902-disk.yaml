@@ -3,7 +3,7 @@ apiVersion: v1alpha1
 kind: VolumeConfig
 name: EPHEMERAL
 provisioning:
-  maxSize: 64GB
+  maxSize: 32GB
 ---
 # u-localpath.yaml
 apiVersion: v1alpha1
@@ -14,5 +14,5 @@ provisioning:
     match: "system_disk"
     #match: "system_disk"
     #match: "!system_disk"
-  maxSize: 64GB
+  maxSize: 16GB
 # /var/mnt/localpath
