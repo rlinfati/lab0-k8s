@@ -23,6 +23,7 @@ sudo dnf install nvidia-driver-cuda
 ##########
 
 sudo nvidia-ctk runtime configure --runtime=crio --set-as-default=false --config=/etc/crio/crio.conf.d/99-nvidia.conf
+find /etc/crio/
 sudo systemctl restart crio
 
 # eof

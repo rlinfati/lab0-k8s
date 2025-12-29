@@ -2,6 +2,13 @@
 
 set -ex
 
+sudo grubby --update-kernel=ALL --remove-args="rhgb"
+
+# FIX: fenix
+# FIX: sudo grubby --update-kernel=ALL --args="reboot=efi"
+# FIX: sudo grubby --update-kernel=ALL --remove-args="reboot=efi"
+# FIX: reboot=efi reboot=acpi reboot=pci
+
 curl https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v1.34/rpm/isv:cri-o:stable:v1.34.repo                      | sudo tee /etc/yum.repos.d/cri-o.repo
 curl https://download.opensuse.org/repositories/isv:/kubernetes:/core:/stable:/v1.34/rpm/isv:kubernetes:core:stable:v1.34.repo | sudo tee /etc/yum.repos.d/kubernetes.repo
 

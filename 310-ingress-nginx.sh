@@ -12,29 +12,25 @@ kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"replace","path":"/spec/type","value":"ClusterIP"}
 ]'
 
-# cabhs.srv
+# cabhs.srv - lab0x86.m0.cl
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"add","path":"/spec/externalIPs","value":["192.99.45.132"]}
 ]'
-# clval.vps
+# clval.vps - lab0arm.m0.cl
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"add","path":"/spec/externalIPs","value":["172.30.16.3"]}
 ]'
-# fenix.ubb
+# fenix.ubb - lab017a.m0.cl
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"add","path":"/spec/externalIPs","value":["146.83.193.155"]}
 ]'
-# radio.ubb
+# radio.ubb - lab023a.m0.cl
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"add","path":"/spec/externalIPs","value":["146.83.193.156"]}
 ]'
-# reloj.ubb
+# reloj.ubb - lab025a.m0.cl
 kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
   {"op":"add","path":"/spec/externalIPs","value":["146.83.193.157"]}
-]'
-# synco.ubb
-kubectl -n ingress-nginx patch svc ingress-nginx-controller --type='json' -p='[
-  {"op":"add","path":"/spec/externalIPs","value":["146.83.193.158"]}
 ]'
 # hostPort
 kubectl -n ingress-nginx patch deploy ingress-nginx-controller --type='json' -p='[

@@ -15,8 +15,6 @@ spec:
   #- cabhs.srv.menoscero.com
   #- clval.vps.menoscero.com
   #- fenix.ubb.menoscero.com
-  #- radio.ubb.menoscero.com
-  #- reloj.ubb.menoscero.com
   issuerRef:
     kind: ClusterIssuer
     name: le-prod
@@ -59,8 +57,6 @@ data:
                 #id = cabhs.srv.menoscero.com
                 #id = clval.vps.menoscero.com
                 #id = fenix.ubb.menoscero.com
-                #id = radio.ubb.menoscero.com
-                #id = reloj.ubb.menoscero.com
             }
             remote {
                 auth = eap-tls
