@@ -1,0 +1,85 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rbackup
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: rbackup-databackup
+  namespace: rbackup
+spec:
+  schedule: "31 05 * * 0,3,5" # minuto hora dia1-31 mes1-12 dia0-6
+  timeZone: "America/Santiago"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: rbackup
+            image: ghcr.io/rlinfati/lab0-container:rbackup
+            command:
+              - /bin/sh
+              - -c
+              - |
+                set -ex
+                #
+                mkdir -p $HOME/.config/rclone/
+                cp /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
+                #
+                rclone version
+                # RodrigoLinfatiShared -> DataBackup
+                rclone sync linfati-rlshared:backup-kubernetes/ /DataVolume/DataBackup/backup-kubernetes/
+                rclone sync linfati-rlshared:backup-fotos/      /DataVolume/DataBackup/backup-fotos/
+                rclone sync linfati-rlshared:home-rlinfati/     /DataVolume/DataBackup/home-rlinfati/
+                rclone sync dropbox:                            /DataVolume/DataBackup/mirror-dropbox/
+                rclone sync gdrive:                             /DataVolume/DataBackup/mirror-gdrive/
+                rclone sync linfati-gdrive:                     /DataVolume/DataBackup/mirror-linfati-gdrive/
+                rclone sync onedrive:                           /DataVolume/DataBackup/mirror-onedrive/
+                rclone sync ubiobio:                            /DataVolume/DataBackup/mirror-ubiobio-gdrive/ --exclude rlinfati-vscam/
+                rclone sync ubiobio-ms:                         /DataVolume/DataBackup/mirror-ubiobio-onedrive/
+                rclone sync linfati-rlshared:                   /DataVolume/DataBackup/ --no-update-modtime --no-update-dir-modtime --dry-run # DELETE dry-run
+                #
+                mkdir -p $HOME/.ssh
+                chmod 700 $HOME/.ssh
+                cp /run/rbackup-config/id_ed25519 $HOME/.ssh/id_ed25519
+                chmod 400 $HOME/.ssh/id_ed25519
+                touch $HOME/.ssh/known_hosts
+                chmod 600 $HOME/.ssh/known_hosts
+                #
+                rsync --version
+                RSYNCCMD="rsync --delete --delete-after -HPaxi"
+                # DataBackup -> Hetzner
+                ssh-keyscan -q -t ed25519 -p 23 u190950.your-storagebox.de >> ~/.ssh/known_hosts
+                $RSYNCCMD -e 'ssh -p 23 -l u190950' /DataVolume/DataBackup/ u190950.your-storagebox.de:/home/DataBackup/
+                # DataBackup -> rsync.net
+                ssh-keyscan -q -t ed25519 de4108.rsync.net >> ~/.ssh/known_hosts
+                $RSYNCCMD /DataVolume/DataBackup/ de4108@de4108.rsync.net:DataBackup/
+                exec true
+            volumeMounts:
+            - name: rbackup-config
+              mountPath: /run/rbackup-config/
+              readOnly: true
+            - name: databackup
+              mountPath: /DataVolume/DataBackup
+          volumes:
+          - name: rbackup-config
+            secret:
+              secretName: config
+          - name: databackup
+            hostPath:
+              path: /DataVolume/DataBackup
+          restartPolicy: Never
+#
+# find /DataVolume/DataBackup ! -user  root -exec chown 0 {} +
+# find /DataVolume/DataBackup ! -group root -exec chgrp 0 {} +
+# find /DataVolume/DataBackup -type d ! -perm 0755 -exec chmod 0755 {} +
+# find /DataVolume/DataBackup -type f ! -perm 0644 -exec chmod 0644 {} +
+# find /DataVolume/DataBackup ! -context 'system_u:object_r:container_file_t:s0' -exec chcon -u system_u -r object_r -t container_file_t -l s0 -- {} +
+#
+# kubectl -n rbackup get all
+# kubectl -n rbackup delete cronjob.batch rbackup-databackup
+# kubectl -n rbackup logs cronjob.batch/rbackup-databackup
+# kubectl -n rbackup create job --from=cronjob/rbackup-databackup rbackup-databackup-$(date '+%Y-%m-%d-%H-%M-%S')
+# kubectl -n rbackup delete job --all

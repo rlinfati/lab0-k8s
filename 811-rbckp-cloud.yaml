@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rbackup
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: rbackup-cloud
+  namespace: rbackup
+spec:
+  schedule: "31 03 * * 0,3,5" # minuto hora dia1-31 mes1-12 dia0-6
+  timeZone: "America/Santiago"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: rbackup
+            image: ghcr.io/rlinfati/lab0-container:rbackup
+            command:
+              - /bin/sh
+              - -c
+              - |
+                set -ex
+                #
+                mkdir -p $HOME/.config/rclone/
+                cp /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
+                #
+                rclone version
+                # DeDupe
+                rclone --dry-run dedupe gdrive:
+                rclone --dry-run dedupe linfati-gdrive:
+                rclone --dry-run dedupe linfati-rlshared:
+                rclone --dry-run dedupe ubiobio:
+                # Rescue Orphans
+                rclone backend rescue gdrive:
+                rclone backend rescue linfati-gdrive:
+                rclone backend rescue linfati-rlshared:
+                rclone backend rescue ubiobio:
+                # -> RodrigoLinfatiShared
+                rclone sync dropbox:          linfati-rlshared:mirror-dropbox/
+                rclone sync gdrive:           linfati-rlshared:mirror-gdrive/
+                rclone sync linfati-gdrive:   linfati-rlshared:mirror-linfati-gdrive/
+                rclone sync onedrive:         linfati-rlshared:mirror-onedrive/
+                rclone sync ubiobio:          linfati-rlshared:mirror-ubiobio-gdrive/ --exclude rlinfati-vscam/
+                rclone sync ubiobio-ms:       linfati-rlshared:mirror-ubiobio-onedrive/
+                # -> backup01@linfati123
+                rclone sync linfati-rlshared: backup01@linfati123:
+                # -> backup02@linfati123
+                rclone sync ubiobio:          backup02@linfati123:mirror-ubiobio-gdrive/ --exclude rlinfati-vscam/
+                rclone sync ubiobio-ms:       backup02@linfati123:mirror-ubiobio-onedrive/
+                exec true
+            volumeMounts:
+            - name: rbackup-config
+              mountPath: /run/rbackup-config/
+              readOnly: true
+          volumes:
+          - name: rbackup-config
+            secret:
+              secretName: config
+          restartPolicy: Never
+# kubectl -n rbackup get all
+# kubectl -n rbackup delete cronjob.batch rbackup-cloud
+# kubectl -n rbackup logs cronjob.batch/rbackup-cloud
+# kubectl -n rbackup create job --from=cronjob/rbackup-cloud rbackup-cloud-$(date '+%Y-%m-%d-%H-%M-%S')
+# kubectl -n rbackup delete job --all

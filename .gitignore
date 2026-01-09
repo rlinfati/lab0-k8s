@@ -3,6 +3,7 @@
 221-grbts-private.yaml
 411-cloudflare-private.yaml
 421-tailscale-private.yaml
+801-rbckp-private.yaml
 901-secrets.yaml
 901-talosconfig
 904-node-101-cp-w.yaml
