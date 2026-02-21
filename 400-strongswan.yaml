@@ -47,7 +47,7 @@ data:
   ikev2.conf: |
     # /etc/strongswan/swanctl/conf.d/ikev2.conf
     connections {
-        pubkey-eap-tls {
+        pubkey-eap {
             version = 2
             pools = pool-ipv4
             local {
@@ -59,12 +59,14 @@ data:
                 #id = fenix.ubb.menoscero.com
             }
             remote {
-                auth = eap-tls
+                auth = eap-dynamic
+                id = %any
                 eap_id = %any
             }
             children {
                 tunnel-gwnet {
-                    local_ts = dynamic, 0.0.0.0/0
+                    local_ts = 0.0.0.0/0
+                    remote_ts = dynamic
                     mode = tunnel
                 }
             }
@@ -75,10 +77,21 @@ data:
             addrs = 172.31.101.0/24
             dns = 10.96.0.10
         }
-        pool-ipv6 {
-            addrs = fd00::172:31:101:0/112
+        #pool-ipv6 {
+        #    addrs = fd00::172:31:101:0/112
+        #}
+    }
+    authorities {
+        m0-0ca-2024 {
+            cacert = m0-0ca-2024.crt
         }
     }
+    #secrets {
+    #    eap-kubernetes {
+    #        id = kubernetes
+    #        secret = "00000000-0000-0000-0000-000000000000"
+    #    }
+    #}
 ---
 apiVersion: v1
 kind: ConfigMap

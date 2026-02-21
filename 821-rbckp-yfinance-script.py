@@ -17,10 +17,10 @@ from matplotlib.backends.backend_pdf import PdfPages
 K8SNODENAME = os.environ.get("K8SNODENAME", "localhost.home.arpa")
 EXCEL_PATH  = f"YahooFinanceHistory-{K8SNODENAME}.xlsx"
 PDF_PATH    = f"YahooFinanceHistory-{K8SNODENAME}.pdf"
-FROM_DATE   = "2023-01-01"
+FROM_DATE   = "2025-01-01"
 
 TICKERS = [
-    # etf moneda
+    # ETF Singular
     'CFIETFIPSA.SN',
     'CFINASDAQ.SN',
     'CFISP500.SN',
@@ -29,31 +29,38 @@ TICKERS = [
     'CFIETFCC.SN',
     'CFIETFCD.SN',
     'CFIGC.SN',
-    # cfi cfm etf
+    'CFIETF4060.SN',
+    'CFI-ETFUSD.SN',
+    'CFI-ETFBRL.SN',
+    # ETF BtgPactual
+    'CFIBTETFTW.SN',
+    'CFIETFUSA.SN',
+    'CFIBTETFMP.SN',
+    # CFI CFM BetterPlan
     'CFMITNIPSA.SN',
     'CFMLVENFR.SN',
-    'CFIQAC.SN',
     'CFIFALCFIG.SN',
-    'CFIMBIDT-B.SN',
-    'CFIFTRLP-E.SN',
     'CFIMBIDA-A.SN',
     'CFIAMSLPA.SN',
     'CFINRENTAS.SN',
     'CFIMBIRF-A.SN',
+    # CFI CFM Flexifolio
     'CFIPIONERO.SN',
     'CFIMRCLP.SN',
-    # cfi cfm etf
-    'CFIFTCLP-E.SN',
-    'CFITODPF-E.SN',
-    # currency
+    'CFIAMDVASC.SN',
+    'CFIADVAEFA.SN',
+    'CFIAMDVATA.SN',
+    # Currencies
+    'BRL=X',
+    'BRLCLP=X',
     'CLP=X',
     'DX-Y.NYB',
     'EURUSD=X',
     'EURCLP=X',
-    # index futures
+    'BTC-USD',
+    # Indexies and commodities
     'HG=F',
     'GC=F',
-    'BTC-USD',
     '^IPSA',
     '^GSPC',
     'ES=F',
@@ -88,7 +95,6 @@ def update_data(existing_data: dict, tickers: list) -> dict:
 
         if df_new.empty:
             print(f"[WARN] No data for {ticker}")
-            continue
 
         df_new.index = pd.to_datetime(df_new.index).tz_localize(None)
 
@@ -147,7 +153,11 @@ def plot_to_pdf(data: dict, path: str, from_date: str) -> None:
             ax2 = ax1.twinx()
             ax2.plot(df.index, df["LogReturn"], linestyle=":", color="grey", label="LogReturn-20")
             ax2.set_ylabel("LogReturn")
-            ax2.set_ylim(-df['LogReturn'].abs().quantile(0.9),df['LogReturn'].abs().quantile(0.9))
+            ax2q = df['LogReturn'].abs().quantile(0.9)
+            if np.isnan(ax2q):
+                print(f"[WARN] LogReturn quantile 90% NaN para {ticker}")
+                ax2q = 0.05
+            ax2.set_ylim(-ax2q, ax2q)
 
             lines = ax1.get_lines() + ax2.get_lines()
             labels = [l.get_label() for l in lines]
