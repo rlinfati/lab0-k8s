@@ -35,7 +35,9 @@ TICKERS = [
     # ETF BtgPactual
     'CFIBTETFTW.SN',
     'CFIETFUSA.SN',
+    'CFIETFLAT.SN',
     'CFIBTETFMP.SN',
+    'CFIETFRFLP.SN',
     # CFI CFM BetterPlan
     'CFMITNIPSA.SN',
     'CFMLVENFR.SN',

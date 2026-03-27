@@ -1,0 +1,80 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prepull
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pp-jupyter
+  namespace: prepull
+spec:
+  schedule: "31 01 * * 2" # minuto hora dia1-31 mes1-12 dia0-6
+  timeZone: "America/Santiago"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+          - name: pp-jupyter-hub
+            image: ghcr.io/rlinfati/lab0-container:jupyter-hub
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-jupyter-lab-julia-1-13
+            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.13
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-jupyter-lab-julia-1-12
+            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.12
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-jupyter-lab-julia-1-10
+            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.10
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-jupyter-lab-anaconda-latest
+            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-anaconda-latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-jupyter-lab-devcpp-latest
+            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-devcpp-latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-jupyter-lab-base-latest
+            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-base-latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-julia-notebook
+            image: quay.io/jupyter/julia-notebook:latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-scipy-notebook
+            image: quay.io/jupyter/scipy-notebook:latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-r-notebook
+            image: quay.io/jupyter/r-notebook:latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-pytorch-notebook
+            image: quay.io/jupyter/pytorch-notebook:latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-tensorflow-notebook
+            image: quay.io/jupyter/tensorflow-notebook:latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          containers:
+          - name: pp-prepull
+            image: registry.access.redhat.com/ubi10/ubi:latest
+            command: ["/bin/true"]
+          restartPolicy: Never
+# 
+# kubectl -n prepull get all
+# kubectl -n prepull delete cronjob.batch pp-jupyter
+# kubectl -n prepull logs cronjob.batch/pp-jupyter
+# kubectl -n prepull create job --from=cronjob/pp-jupyter pp-jupyter-$(date '+%Y-%m-%d-%H-%M-%S')
+# kubectl -n prepull delete job --all
+# sudo podman image prune --force
+# sudo podman image ls -a | sort

@@ -15,8 +15,8 @@ sudo grubby --update-kernel=ALL --remove-args="rhgb"
 # sudo chronyc sources -v
 # sudo chronyc tracking
 
-curl https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v1.34/rpm/isv:cri-o:stable:v1.34.repo                      | sudo tee /etc/yum.repos.d/cri-o.repo
-curl https://download.opensuse.org/repositories/isv:/kubernetes:/core:/stable:/v1.34/rpm/isv:kubernetes:core:stable:v1.34.repo | sudo tee /etc/yum.repos.d/kubernetes.repo
+curl https://download.opensuse.org/repositories/isv:/cri-o:/stable:/v1.35/rpm/isv:cri-o:stable:v1.35.repo                      | sudo tee /etc/yum.repos.d/cri-o.repo
+curl https://download.opensuse.org/repositories/isv:/kubernetes:/core:/stable:/v1.35/rpm/isv:kubernetes:core:stable:v1.35.repo | sudo tee /etc/yum.repos.d/kubernetes.repo
 
 echo net.ipv4.ip_forward = 1 | sudo tee /etc/sysctl.d/kubernetes.conf
 sudo sysctl --system

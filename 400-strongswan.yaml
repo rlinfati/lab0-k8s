@@ -65,7 +65,7 @@ data:
             }
             children {
                 tunnel-gwnet {
-                    local_ts = 0.0.0.0/0
+                    local_ts = 10.96.0.0/12, 10.244.0.0/16
                     remote_ts = dynamic
                     mode = tunnel
                 }
@@ -156,7 +156,7 @@ spec:
       - name: cert
         image: registry.access.redhat.com/ubi10/ubi
         command:
-        - sh
+        - /bin/sh
         - -c
         - |
           awk '/-----BEGIN CERTIFICATE-----/ {n++} {if (n>1) print > "/out/chain.crt"}' /in/tls.crt 

@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: prepull
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pp-jupytercuda
+  namespace: prepull
+spec:
+  schedule: "31 01 * * 3" # minuto hora dia1-31 mes1-12 dia0-6
+  timeZone: "America/Santiago"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+          - name: pp-jupyter-lab-juliacuda-1-12
+            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.12
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-jupyter-nvcr-pytorch
+            image: ghcr.io/rlinfati/lab0-container:jupyter-nvcr-pytorch
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-pytorch-notebook-cuda12
+            image: quay.io/jupyter/pytorch-notebook:cuda12-latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          - name: pp-tensorflow-notebook-cuda
+            image: quay.io/jupyter/tensorflow-notebook:cuda-latest
+            command: ["/bin/true"]
+            imagePullPolicy: Always
+          containers:
+          - name: pp-prepull
+            image: registry.access.redhat.com/ubi10/ubi:latest
+            command: ["/bin/true"]
+          restartPolicy: Never
+# 
+# kubectl -n prepull get all
+# kubectl -n prepull delete cronjob.batch pp-jupytercuda
+# kubectl -n prepull logs cronjob.batch/pp-jupytercuda
+# kubectl -n prepull create job --from=cronjob/pp-jupytercuda pp-jupytercuda-$(date '+%Y-%m-%d-%H-%M-%S')
+# kubectl -n prepull delete job --all
+# sudo podman image prune --force
+# sudo podman image ls -a | sort
