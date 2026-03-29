@@ -1,0 +1,35 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jupyterhub
+  namespace: jupyterhub
+  annotations:
+    cert-manager.io/cluster-issuer: "le-prod"
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+          - jupyterhub.home.arpa
+          #- lab0arm.m0.cl
+          #- lab0x86.m0.cl
+          #- lab017a.m0.cl
+          #- lab023a.m0.cl
+          #- lab025a.m0.cl
+      secretName: tls
+  rules:
+    - host: jupyterhub.home.arpa
+    #- host: lab0arm.m0.cl
+    #- host: lab0x86.m0.cl
+    #- host: lab017a.m0.cl
+    #- host: lab023a.m0.cl
+    #- host: lab025a.m0.cl
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: www
+                port:
+                  number: 8000
