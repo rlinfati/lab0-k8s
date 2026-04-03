@@ -9,11 +9,12 @@ sudo firewall-cmd --zone=public --list-all
 # local repo
 helm repo add traefik https://traefik.github.io/charts
 helm repo update
-cat 311-traefix-ns.yaml > 312-traefix.yaml
-helm --namespace traefik template traefik traefik/traefik --set service.type=ClusterIP >> 312-traefix.yaml
+
+(echo 'apiVersion: v1\nkind: Namespace\nmetadata:\n  name: traefik' && 
+helm --namespace traefik template traefik traefik/traefik --set service.type=ClusterIP) > 312-traefix.yaml
 
 # delete ingress-nginx
-kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/refs/heads/main/deploy/static/provider/cloud/deploy.yaml
+# kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/refs/heads/main/deploy/static/provider/cloud/deploy.yaml
 
 # install traefik
 kubectl apply -f 312-traefix.yaml
