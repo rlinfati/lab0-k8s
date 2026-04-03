@@ -8,6 +8,9 @@ sudo firewall-cmd             --zone=trusted --add-source=10.244.0.0/16
 sudo firewall-cmd             --zone=trusted --add-source=10.96.0.0/12
 sudo firewall-cmd --zone=trusted --list-all
 
+# sudo nmcli connection add type dummy ifname k8s0 con-name k8s0 ipv4.addresses 100.64.100.64/32 ipv4.method manual
+# sudo nmcli connection up k8s0
+
 sudo kubeadm config images pull
 sudo kubeadm init --pod-network-cidr 10.244.0.0/16 --service-cidr 10.96.0.0/12 --dry-run
 sudo kubeadm init --config NoSwap.yaml

@@ -6,7 +6,7 @@ metadata:
     defaultVolumeType: "local"
 provisioner: rancher.io/local-path
 parameters:
-  pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}"
+  pathPattern: "{{ .PVC.Namespace }}/{{ .PVC.Name }}/"
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
 reclaimPolicy: Retain
