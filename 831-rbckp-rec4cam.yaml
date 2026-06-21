@@ -42,15 +42,15 @@ data:
     input_flags() {
       case "$CONFIG" in
         RTSP)
-          printf '%s' "-hide_banner -loglevel error -rtsp_transport tcp -use_wallclock_as_timestamps 1" ;;
+          printf '%s' "-hide_banner -loglevel warning -rtsp_transport tcp -use_wallclock_as_timestamps 1 -timeout 5000000" ;;
         HTTP)
-          printf '%s' "-hide_banner -loglevel error                     -use_wallclock_as_timestamps 1" ;;
+          printf '%s' "-hide_banner -loglevel warning                     -use_wallclock_as_timestamps 1 -timeout 5000000" ;;
         *) err "ERROR: input_flags CONFIG: $CONFIG"; return 1 ;;
       esac
     }
 
-    segment_flags() {
-      printf '%s' "-codec copy -f segment -segment_time $MAX_LEN_VID -reset_timestamps 1 -strftime 1"
+    record_flags() {
+      printf '%s' "-t $MAX_LEN_VID -codec copy"
     }
 
     camera_loop() {
@@ -64,8 +64,11 @@ data:
         OUTDIR="${CAMDIR}/${YM}/${YMD}-${ip}"
         mkdir -p "$OUTDIR" || { err "[cam $ip] ERROR mkdir OUTDIR: $OUTDIR"; exit 1; }
 
-        log "[cam $ip] loop start seg=${MAX_LEN_VID}s ext=$EXT CONFIG=$CONFIG"
-        ffmpeg $(input_flags) -i "$camurl" $(segment_flags) "${OUTDIR}/%Y%m%d-%H%M%S.${EXT}"
+        TS="$(date +%Y-%m-%d-%H-%M-%S)"
+        OUTFILE="${OUTDIR}/${TS}.${EXT}"
+
+        log "[cam $ip] loop start len=${MAX_LEN_VID}s ext=$EXT CONFIG=$CONFIG outfile=$OUTFILE"
+        ffmpeg $(input_flags) -i "$camurl" $(record_flags) "$OUTFILE"
         rc=$?
         log "[cam $ip] loop stop $rc"
         sleep 1
@@ -155,3 +158,5 @@ spec:
           - |
             exec sh /run/script/run.sh
 # kubectl -n rbackup get all
+# kubectl -n rbackup delete pod --all
+# kubectl -n rbackup logs deployment/rbackup-rec4cam

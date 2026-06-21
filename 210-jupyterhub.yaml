@@ -235,7 +235,7 @@ data:
 
     spawner_image_lab0 = """
         <optgroup label="rlinfati/lab0">
-        <option value="ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.13">          Julia 1.13 alpha/beta</option>
+        <option value="ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.13">          Julia 1.13 alpha/beta/rc</option>
         <option value="ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.12" selected> Julia 1.12 stable</option>
         <option value="ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.10">          Julia 1.10 LTS</option>
         <option value="ghcr.io/rlinfati/lab0-container:jupyter-lab-anaconda-latest">     Anaconda</option>
@@ -255,10 +255,9 @@ data:
 
     spawner_image_cuda = """
         <optgroup label="NVIDIA/CUDA">
-        <option value="ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.12">      [lab0]    Julia 1.12</option>
-        <option value="quay.io/jupyter/pytorch-notebook:cuda12-latest">                  [jupyter] PyTorch</option>
-        <option value="quay.io/jupyter/tensorflow-notebook:cuda-latest">                 [jupyter] TensorFlow</option>
-        <option value="ghcr.io/rlinfati/lab0-container:jupyter-nvcr-pytorch">            [nvidia]  PyTorch</option>
+        <option value="ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.10">      [lab0]    Julia 1.10 + cuda</option>
+        <option value="quay.io/jupyter/pytorch-notebook:cuda13-latest">                  [jupyter] PyTorch    + cuda</option>
+        <option value="quay.io/jupyter/tensorflow-notebook:cuda-latest">                 [jupyter] TensorFlow + cuda</option>
         </optgroup>
     """ if hasNVIDIA else ""
 

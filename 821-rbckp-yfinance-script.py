@@ -21,37 +21,42 @@ FROM_DATE   = "2025-01-01"
 
 TICKERS = [
     # ETF Singular
-    'CFIETFIPSA.SN',
-    'CFINASDAQ.SN',
-    'CFISP500.SN',
-    'CFIETFGE.SN',
-    'CFIETFLP.SN',
-    'CFIETFCC.SN',
-    'CFIETFCD.SN',
-    'CFIGC.SN',
-    'CFIETF4060.SN',
-    'CFI-ETFUSD.SN',
-    'CFI-ETFBRL.SN',
+    'CFIETFIPSA.SN',            # 94.44
+    'CFIETFCD.SN',              #100.00
+    'CFIETFCC.SN',              #100.00
+    'CFIETFLP.SN',              # 94.44
+    'CFIETFGE.SN',              #100.00
+    'CFISPETF.SN',              # 99.44
+    'CFINASDAQ.SN',             # 86.67
+    'CFIGC.SN',                 # 47.78
+    'CFI4060ETF.SN',            # 31.11
+    'CFIETFBRL.SN',             # 29.44
     # ETF BtgPactual
-    'CFIBTETFTW.SN',
-    'CFIETFUSA.SN',
-    'CFIETFLAT.SN',
-    'CFIBTETFMP.SN',
-    'CFIETFRFLP.SN',
+    'CFIBTETFMP.SN',            # 77.22
+    'CFIETFRFLP.SN',            # 00.00
+    'CFIBTETFTW.SN',            # 00.00
+    'CFIETFUSA.SN',             # 00.00
+    'CFIETFLAT.SN',             # 00.00
     # CFI CFM BetterPlan
-    'CFMITNIPSA.SN',
-    'CFMLVENFR.SN',
-    'CFIFALCFIG.SN',
-    'CFIMBIDA-A.SN',
-    'CFIAMSLPA.SN',
-    'CFINRENTAS.SN',
-    'CFIMBIRF-A.SN',
+    'CFMITNIPSA.SN',            # 99.44
+    'CFMLVENFR.SN',             # 67.78
+    'CFIFALCFIG.SN',            # 96.11
+    'CFIMBIDA-A.SN',            # 71.11
+    'CFIAMSLPA.SN',             # 45.00
+    'CFINRENTAS.SN',            # 79.44
+    'CFIMBIRF-A.SN',            # 97.78
     # CFI CFM Flexifolio
-    'CFIPIONERO.SN',
-    'CFIMRCLP.SN',
-    'CFIAMDVASC.SN',
-    'CFIADVAEFA.SN',
-    'CFIAMDVATA.SN',
+    'CFIPIONERO.SN',            # 80.00
+    'CFIMRCLP.SN',              # 99.44
+    'CFIAMDVASC.SN',            # 90.00
+    'CFIADVAEFA.SN',            # 00.00
+    'CFIAMDVATA.SN',            # 00.00
+    # Banchile MarketPlus
+    # 'CFIBMPEM-E.SN',          # 63.33
+    # 'CFIBCHMPUS.SN',          # 69.44
+    # 'CFIBCHMPGB.SN',          # 94.44
+    # 'CFIBCHDECH.SN',          #100.00
+    # 'CFIBCHDCPA.SN',          # 85.56
     # Currencies
     'BRL=X',
     'BRLCLP=X',
@@ -69,13 +74,6 @@ TICKERS = [
     '^IXIC',
     'NQ=F',
 ]
-
-TICKERS_FX = {
-    'CFINASDAQ.SN',
-    'CFISP500.SN',
-    'CFIETFGE.SN',
-    'CFIGC.SN',
-}
 
 def load_existing_data(path: str) -> dict:
     data = {}
@@ -138,11 +136,6 @@ def plot_to_pdf(data: dict, path: str, from_date: str) -> None:
 
             for c in ['Open', 'Low', 'High']:
                 df.loc[df[c].isna() | (df[c] == 0), c] = df['Close']
-
-            if ticker in TICKERS_FX:
-                dffx_aligned = dffx.reindex(df.index).ffill()
-                for c in ['Open', 'Low', 'High', 'Close']:
-                    df[c] = df[c] / dffx_aligned["Close"]
 
             df['LogReturn'] = np.log(df['Close'] / df['Close'].shift(20))
 

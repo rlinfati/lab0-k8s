@@ -17,16 +17,12 @@ spec:
       template:
         spec:
           initContainers:
-          - name: pp-jupyter-lab-juliacuda-1-12
-            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.12
+          - name: pp-jupyter-lab-juliacuda-1-10
+            image: ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.10
             command: ["/bin/true"]
             imagePullPolicy: Always
-          - name: pp-jupyter-nvcr-pytorch
-            image: ghcr.io/rlinfati/lab0-container:jupyter-nvcr-pytorch
-            command: ["/bin/true"]
-            imagePullPolicy: Always
-          - name: pp-pytorch-notebook-cuda12
-            image: quay.io/jupyter/pytorch-notebook:cuda12-latest
+          - name: pp-pytorch-notebook-cuda13
+            image: quay.io/jupyter/pytorch-notebook:cuda13-latest
             command: ["/bin/true"]
             imagePullPolicy: Always
           - name: pp-tensorflow-notebook-cuda

@@ -13,9 +13,6 @@ helm repo update
 (echo 'apiVersion: v1\nkind: Namespace\nmetadata:\n  name: traefik' && 
 helm --namespace traefik template traefik traefik/traefik --set service.type=ClusterIP) > 312-traefix.yaml
 
-# delete ingress-nginx
-# kubectl delete -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/refs/heads/main/deploy/static/provider/cloud/deploy.yaml
-
 # install traefik
 kubectl apply -f 312-traefix.yaml
 

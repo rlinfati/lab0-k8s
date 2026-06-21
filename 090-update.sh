@@ -11,7 +11,7 @@ kubectl drain $(hostname -f) --delete-emptydir-data --ignore-daemonsets
 
 sudo kubeadm upgrade plan
 sudo kubeadm config images pull
-sudo kubeadm upgrade apply v1.35.3
+sudo kubeadm upgrade apply v1.35.6
 sudo kubeadm upgrade node
 
 sudo podman image prune --force

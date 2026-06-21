@@ -8,10 +8,8 @@ sudo dnf config-manager rhel-10-for-x86_64-extensions-rpms --enable
 sudo dnf config-manager rhel-10-for-x86_64-supplementary-rpms --enable
 #sudo dnf --disablerepo \*  --enablerepo rhel-10-for-x86_64-extensions-rpms list --available
 #sudo dnf --disablerepo \*  --enablerepo rhel-10-for-x86_64-supplementary-rpms list --available
-
-sudo dnf config-manager --add-repo https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64/cuda-rhel10.repo
-sudo dnf config-manager --setopt=cuda-rhel10-x86_64.priority=999 --save
-#sudo dnf --disablerepo \*  --enablerepo cuda-rhel10-x86_64 list --available
+# https://developer.download.nvidia.com/compute/cuda/repos/rhel9/x86_64/precompiled/
+# https://developer.download.nvidia.com/compute/cuda/repos/rhel10/x86_64
 
 sudo dnf install nvidia-container-toolkit
 sudo dnf install nvidia-driver-cuda

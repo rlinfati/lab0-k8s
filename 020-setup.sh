@@ -15,15 +15,6 @@ sudo kubeadm config images pull
 sudo kubeadm init --pod-network-cidr 10.244.0.0/16 --service-cidr 10.96.0.0/12 --dry-run
 sudo kubeadm init --config NoSwap.yaml
 
-### rhel10 SELinux BPF policy workaround
-### rpm -qa container-selinux
-### https://access.redhat.com/downloads/content/container-selinux/2.240.0-3.el9_7/noarch/fd431d51/package-changelog
-### allow init_t container_runtime_t:bpf prog_run;
-### sudo ausearch -c 'systemd' --raw | audit2allow -M fixContainerRuntimeBPF
-### sudo semodule -i fixContainerRuntimeBPF.pp
-### sudo semodule -l | grep ^fix
-### sudo semodule -r fixContainerRuntimeBPF
-
 mkdir -p $HOME/.kube
 sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
 sudo chown $(id -u):$(id -g) $HOME/.kube/config

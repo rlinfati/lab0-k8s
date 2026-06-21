@@ -159,7 +159,24 @@ spec:
         - /bin/sh
         - -c
         - |
-          awk '/-----BEGIN CERTIFICATE-----/ {n++} {if (n>1) print > "/out/chain.crt"}' /in/tls.crt 
+          set -e
+          rm -f /out/le-ikev2-chain-*.crt
+          awk '
+            /-----BEGIN CERTIFICATE-----/ {
+              cert++
+              if (cert > 1) {
+                out = sprintf("/out/le-ikev2-chain-%d.crt", cert - 1)
+              }
+            }
+            cert > 1 {
+              print > out
+            }
+            /-----END CERTIFICATE-----/ {
+              if (cert > 1) {
+                close(out)
+              }
+            }
+          ' /in/tls.crt
         volumeMounts:
         - name: chain
           mountPath: /out/
@@ -174,6 +191,10 @@ spec:
           - -c
           - |
             set -e
+            for cert in /etc/strongswan/swanctl/x509chain/le-ikev2-chain-*.crt; do
+              [ -e "$cert" ] || continue
+              cp "$cert" "/etc/strongswan/swanctl/x509ca/$(basename "$cert")"
+            done
             kick() {
               nft --file /etc/nftables/nat-masquerade.nft || true
               /usr/bin/swanctl --load-all || true
@@ -222,8 +243,7 @@ spec:
           mountPath: /etc/strongswan/swanctl/x509ca/m0-0ca-2024.crt
           subPath: m0-0ca-2024.crt
         - name: chain
-          mountPath: /etc/strongswan/swanctl/x509ca/le-ikev2-chain.crt
-          subPath: chain.crt
+          mountPath: /etc/strongswan/swanctl/x509chain
         - name: tls
           mountPath: /etc/strongswan/swanctl/x509/le-ikev2-srv.crt
           subPath: tls.crt
