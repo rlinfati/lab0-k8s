@@ -5,4 +5,5 @@
 421-tailscale-private.yaml
 901-secrets.yaml
 901-talosconfig
+903-extension-private.yaml
 905-node-*-*.yaml

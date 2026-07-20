@@ -1,4 +1,4 @@
-# 906-node-cpw-100.yaml
+# 906-node-ip100.yaml
 version: v1alpha1
 machine:
     network:
@@ -12,10 +12,8 @@ machine:
                 gateway: 192.168.64.1
     time:
         bootTimeout: 5s
-cluster:
-    allowSchedulingOnControlPlanes: true
 ---
 apiVersion: v1alpha1
 kind: HostnameConfig
 auto: off
-hostname: talos-cpw.home.arpa
+hostname: talos-ip100.home.arpa

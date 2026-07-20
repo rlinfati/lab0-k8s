@@ -1,4 +1,4 @@
-# 906-node-w-101.yaml
+# 906-node-ip102.yaml
 version: v1alpha1
 machine:
     network:
@@ -6,7 +6,7 @@ machine:
           - deviceSelector:
               physical: true
             addresses:
-              - 192.168.64.101/24
+              - 192.168.64.102/24
             routes:
               - network: 0.0.0.0/0
                 gateway: 192.168.64.1
@@ -16,4 +16,4 @@ machine:
 apiVersion: v1alpha1
 kind: HostnameConfig
 auto: off
-hostname: talos-w1.home.arpa
+hostname: talos-ip102.home.arpa

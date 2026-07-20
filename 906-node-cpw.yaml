@@ -1,4 +1,4 @@
-# 906-node-w-102.yaml
+# 906-node-cpw.yaml
 version: v1alpha1
 machine:
     network:
@@ -6,14 +6,16 @@ machine:
           - deviceSelector:
               physical: true
             addresses:
-              - 192.168.64.102/24
+              - 192.168.64.100/24
             routes:
               - network: 0.0.0.0/0
                 gateway: 192.168.64.1
     time:
-        bootTimeout: 5s
+        bootTimeout: 5s # sudo chronyc ntpdata ntp.ubiobio.cl
+cluster:
+    allowSchedulingOnControlPlanes: true
 ---
 apiVersion: v1alpha1
 kind: HostnameConfig
 auto: off
-hostname: talos-w2.home.arpa
+hostname: talos-cpw.home.arpa

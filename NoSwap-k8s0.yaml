@@ -2,16 +2,16 @@
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: "100.64.100.64"
+  advertiseAddress: "100.255.100.255"
   bindPort: 6443
 nodeRegistration:
   kubeletExtraArgs:
     - name: node-ip
-      value: "100.64.100.64"
+      value: "100.255.100.255"
 ---
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: ClusterConfiguration
-controlPlaneEndpoint: "100.64.100.64:6443"
+controlPlaneEndpoint: "100.255.100.255:6443"
 networking:
   dnsDomain: cluster.local
   podSubnet: 10.244.0.0/16

@@ -1,0 +1,32 @@
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: tailscale
+environment:
+$patch: delete
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: cloudflared
+environment:
+$patch: delete
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: tailscale
+environment:
+    - TS_AUTHKEY=abcdefghijklmnopqrstuvwxyz1234567890
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: cloudflared
+environment:
+    - TUNNEL_TOKEN=abcdefghijklmnopqrstuvwxyz1234567890
+---
+# talosctl get service
+# talosctl get extensions
+# talosctl patch machineconfig --patch-file 903-extension.yaml
+# talosctl get extensionserviceconfigs
+# talosctl logs ext-tailscale -f
+# talosctl logs ext-cloudflared -f
+# talosctl edit machineconfig

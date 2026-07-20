@@ -61,14 +61,25 @@ main() {
             ;;
 
         inspect)
-            [ "$#" -eq 2 ] || error "Usage: $0 inspect <node-ip>"
-            TALOSIP="$2"
-            log "Inspecting Talos node: $TALOSIP"
-            talosctl get links --insecure --nodes "$TALOSIP"
-            talosctl get disks --insecure --nodes "$TALOSIP"
-            talosctl get discoveredvolumes --insecure --nodes "$TALOSIP"
-            talosctl get volumestatus --insecure --nodes "$TALOSIP"
-            talosctl get mountstatus --insecure --nodes "$TALOSIP"
+            [ "$#" -le 2 ] || error "Usage: $0 inspect [node-ip]"
+            if [ "$#" -eq 2 ]; then
+                TALOSIP="$2"
+                log "Inspecting Talos node: $TALOSIP"
+                talosctl get links --insecure --nodes "$TALOSIP"
+                talosctl get disks --insecure --nodes "$TALOSIP"
+                talosctl get discoveredvolumes --insecure --nodes "$TALOSIP"
+                talosctl get volumestatus --insecure --nodes "$TALOSIP"
+                talosctl get mountstatus --insecure --nodes "$TALOSIP"
+                talosctl get pcidevices --insecure --nodes "$TALOSIP"
+            else
+                log "Inspecting Talos using the configured node"
+                talosctl get links
+                talosctl get disks
+                talosctl get discoveredvolumes
+                talosctl get volumestatus
+                talosctl get mountstatus
+                talosctl get pcidevices
+            fi
             ;;
 
         controlplane | cp)
