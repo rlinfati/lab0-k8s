@@ -1,0 +1,19 @@
+# 906-node-w-101.yaml
+version: v1alpha1
+machine:
+    network:
+        interfaces:
+          - deviceSelector:
+              physical: true
+            addresses:
+              - 192.168.64.101/24
+            routes:
+              - network: 0.0.0.0/0
+                gateway: 192.168.64.1
+    time:
+        bootTimeout: 5s
+---
+apiVersion: v1alpha1
+kind: HostnameConfig
+auto: off
+hostname: talos-w1.home.arpa

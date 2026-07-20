@@ -1,0 +1,30 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: jupyterhub
+  namespace: jupyterhub
+  annotations:
+    cert-manager.io/cluster-issuer: lencr
+    traefik.ingress.kubernetes.io/router.entrypoints: websecure
+spec:
+  ingressClassName: traefik
+  tls:
+    - hosts:
+          - jupyterhub.home.arpa
+      secretName: tls
+  rules:
+    - host: jupyterhub.home.arpa
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: www
+                port:
+                  number: 8000
+# kubectl -n jupyterhub patch ingress jupyterhub --type=json -p='[{"op":"replace","path":"/spec/rules/0/host","value":"lab0arm.m0.cl"},{"op":"replace","path":"/spec/tls/0/hosts/0","value":"lab0arm.m0.cl"}]'
+# kubectl -n jupyterhub patch ingress jupyterhub --type=json -p='[{"op":"replace","path":"/spec/rules/0/host","value":"lab0x86.m0.cl"},{"op":"replace","path":"/spec/tls/0/hosts/0","value":"lab0x86.m0.cl"}]'
+# kubectl -n jupyterhub patch ingress jupyterhub --type=json -p='[{"op":"replace","path":"/spec/rules/0/host","value":"lab017a.m0.cl"},{"op":"replace","path":"/spec/tls/0/hosts/0","value":"lab017a.m0.cl"}]'
+# kubectl -n jupyterhub patch ingress jupyterhub --type=json -p='[{"op":"replace","path":"/spec/rules/0/host","value":"lab023a.m0.cl"},{"op":"replace","path":"/spec/tls/0/hosts/0","value":"lab023a.m0.cl"}]'
+# kubectl -n jupyterhub patch ingress jupyterhub --type=json -p='[{"op":"replace","path":"/spec/rules/0/host","value":"lab025a.m0.cl"},{"op":"replace","path":"/spec/tls/0/hosts/0","value":"lab025a.m0.cl"}]'

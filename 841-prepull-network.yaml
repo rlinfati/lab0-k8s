@@ -1,0 +1,30 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: pp-network
+  namespace: prepull
+spec:
+  schedule: "31 01 * * 1" # minuto hora dia1-31 mes1-12 dia0-6
+  timeZone: "America/Santiago"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          initContainers:
+          - name: pp-network-cloudflared
+            image: docker.io/cloudflare/cloudflared:latest
+            command: ["cloudflared", "version"]
+            imagePullPolicy: Always
+          - name: pp-network-tailscale
+            image: ghcr.io/tailscale/tailscale:latest
+            command: ["tailscale", "version"]
+            imagePullPolicy: Always
+          containers:
+          - name: pp-prepull
+            image: registry.access.redhat.com/ubi10/ubi:latest
+            command: ["/bin/true"]
+          restartPolicy: Never
+# kubectl -n prepull get all
+# kubectl -n prepull create job --from=cronjob/pp-network pp-network-$(date '+%Y-%m-%d-%H-%M-%S')
+# kubectl -n prepull delete job --all

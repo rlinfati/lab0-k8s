@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: rbackup
+  labels:
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/audit: baseline
+    pod-security.kubernetes.io/warn: baseline
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: config
+  namespace: rbackup
+stringData:
+  id_ed25519: |
+    # id_ed25519
+  rclone.conf: |
+    # rclone.conf
+# kubectl create secret generic config -n rbackup \
+#   --from-file=id_ed25519="$HOME/.ssh/id_MacBookPro2020" \
+#   --from-file=rclone.conf="$HOME/.config/rclone/rclone.conf" \
+#   --dry-run=client -o yaml | kubectl apply -f -
+# ssh clval.vps.menoscero.com kubectl apply -f -
+# ssh cabhs.srv.menoscero.com kubectl apply -f -
+# ssh fenix.ubb.menoscero.com kubectl apply -f -
+# ssh radio.ubb.menoscero.com kubectl apply -f -
+# ssh reloj.ubb.menoscero.com kubectl apply -f -
+# ssh nuc4x.srv.menoscero.com kubectl apply -f -

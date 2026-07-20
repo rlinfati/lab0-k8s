@@ -1,0 +1,15 @@
+# 902-disk.yaml
+apiVersion: v1alpha1
+kind: VolumeConfig
+name: EPHEMERAL
+provisioning:
+  maxSize: 32GB
+---
+apiVersion: v1alpha1
+kind: UserVolumeConfig
+name: localpath
+provisioning:
+  diskSelector:
+    match: "system_disk"
+  maxSize: 16GB
+# /var/mnt/localpath

@@ -1,0 +1,157 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: script
+  namespace: rbackup
+data:
+  run.sh: |
+    #!/bin/sh
+
+    set -x
+
+    mkdir -p $HOME/.config/rclone/
+    cp /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
+
+    CONFIG="${CONFIG:-RTSP}" # RTSP | HTTP
+    CFGUSR="${CFGUSR:-admin}"
+    CFGPWD="${CFGPWD:-se5vi5lla}"
+    #CFGIPS="${CFGIPS:-172.30.12.241 172.30.12.242 172.30.12.243 172.30.12.244}"
+    CFGIPS="${CFGIPS:-172.30.12.241               172.30.12.243 172.30.12.244}"
+    CAMDIR="${CAMDIR:-/mnt/emptyDir/livecams}"
+    RCNDST="${RCNDST:-ubiobio-vscam:}"
+    MAX_LEN_VID="${MAX_LEN_VID:-1200}"
+    EXT="${EXT:-mkv}"
+
+    log() { printf '%s [%s] %s\n' "$(date -Is)" "$$" "$*" >&1 ; }
+    err() { printf '%s [%s] %s\n' "$(date -Is)" "$$" "$*" >&2 ; }
+
+    build_camurl() {
+      ip="$1"
+      case "$CONFIG" in
+        RTSP) printf 'rtsp://%s:%s@%s:554/tcp/av0_1' "$CFGUSR" "$CFGPWD" "$ip" ;;
+        HTTP) printf 'http://%s/videostream.cgi?user=%s&pwd=%s' "$ip" "$CFGUSR" "$CFGPWD" ;;
+        *) err "ERROR: build_camurl CONFIG: $CONFIG"; return 1 ;;
+      esac
+    }
+
+    input_flags() {
+      case "$CONFIG" in
+        RTSP)
+          printf '%s' "-hide_banner -loglevel warning -rtsp_transport tcp -use_wallclock_as_timestamps 1 -timeout 5000000" ;;
+        HTTP)
+          printf '%s' "-hide_banner -loglevel warning                     -use_wallclock_as_timestamps 1 -timeout 5000000" ;;
+        *) err "ERROR: input_flags CONFIG: $CONFIG"; return 1 ;;
+      esac
+    }
+
+    record_flags() {
+      printf '%s' "-t $MAX_LEN_VID -codec copy"
+    }
+
+    camera_loop() {
+      ip="$1"
+      camurl="$(build_camurl "$ip")"
+      log "[cam $ip] main loop start"
+
+      while :; do
+        YM="$(date +%Y-%m)"
+        YMD="$(date +%Y-%m-%d)"
+        OUTDIR="${CAMDIR}/${YM}/${YMD}-${ip}"
+        mkdir -p "$OUTDIR" || { err "[cam $ip] ERROR mkdir OUTDIR: $OUTDIR"; exit 1; }
+
+        TS="$(date +%Y-%m-%d-%H-%M-%S)"
+        OUTFILE="${OUTDIR}/${TS}.${EXT}"
+
+        log "[cam $ip] loop start len=${MAX_LEN_VID}s ext=$EXT CONFIG=$CONFIG outfile=$OUTFILE"
+        ffmpeg $(input_flags) -i "$camurl" $(record_flags) "$OUTFILE"
+        rc=$?
+        log "[cam $ip] loop stop $rc"
+        sleep 1
+      done
+    }
+
+    rclone_loop() {
+      log "[rclone] main loop start"
+      while :; do
+        log "[rclone] loop start"
+        rclone move "${CAMDIR}/" "$RCNDST" --min-age "5m"
+        rc=$?
+        log "[rclone] loop stop $rc"
+        sleep 600
+      done
+    }
+
+    shutdown() {
+      log "SIGTERM/SIGINT: shutdown..."
+      for pid in $pids; do
+        kill -TERM "$pid" || true
+      done
+      wait
+      sleep 1
+      rclone move "${CAMDIR}/" "$RCNDST"
+      exit 0
+    }
+
+    mkdir -p "$CAMDIR" || { err "ERROR: mkdir CAMDIR: $CAMDIR"; exit 1; }
+
+    pids=""
+
+    for ip in $CFGIPS; do
+      camera_loop "$ip" &
+      pids="$pids $!"
+    done
+
+    rclone_loop &
+    pids="$pids $!"
+
+    trap shutdown INT TERM
+
+    wait -n
+    err "[EOF] ERROR"
+    shutdown
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rbackup-rec4cam
+  namespace: rbackup
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rbackup-rec4cam
+  template:
+    metadata:
+      labels: 
+        app: rbackup-rec4cam
+    spec:
+      volumes:
+        - name: memdir
+          emptyDir:
+            medium: Memory
+            sizeLimit: 4Gi
+        - name: script
+          configMap:
+            name: script
+        - name: rbackup-config
+          secret:
+            secretName: config
+      containers:
+      - name: rbackup-rec4cam
+        image: ghcr.io/rlinfati/lab0-container:rbackup
+        volumeMounts:
+            - name: memdir
+              mountPath: /mnt/emptyDir
+            - name: script
+              mountPath: /run/script
+            - name: rbackup-config
+              mountPath: /run/rbackup-config/
+              readOnly: true
+        command:
+          - /bin/sh
+          - -c
+          - |
+            exec sh /run/script/run.sh
+# kubectl -n rbackup get all
+# kubectl -n rbackup delete pod --all
+# kubectl -n rbackup logs deployment/rbackup-rec4cam
