@@ -1,0 +1,25 @@
+apiVersion: kustomize.config.k8s.io/v1alpha1
+kind: Component
+patches:
+  - target:
+      kind: Deployment
+    patch: |-
+      kind: Deployment
+      metadata:
+        name: ignored
+      spec:
+        template:
+          metadata:
+            annotations:
+              m0net/serial: "20260818-001"
+  - target:
+      kind: DaemonSet
+    patch: |-
+      kind: DaemonSet
+      metadata:
+        name: ignored
+      spec:
+        template:
+          metadata:
+            annotations:
+              m0net/serial: "20260818-001"

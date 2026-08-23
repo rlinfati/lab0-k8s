@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-grbts
+  namespace: grbts
+spec:
+  selector:
+    matchLabels:
+      app: pp-grbts
+  template:
+    metadata:
+      labels:
+        app: pp-grbts
+    spec:
+      nodeSelector:
+        m0net/run.grbts: "true"
+      initContainers:
+        - name: grbts
+          image: ghcr.io/rlinfati/lab0-container:grbts
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-grbts
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---

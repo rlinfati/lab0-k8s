@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-strongswan
+  namespace: strongswan
+spec:
+  selector:
+    matchLabels:
+      app: pp-strongswan
+  template:
+    metadata:
+      labels:
+        app: pp-strongswan
+    spec:
+      nodeSelector:
+        m0net/run.strongswan: "true"
+      initContainers:
+        - name: strongswan
+          image: ghcr.io/rlinfati/lab0-container:strongswan
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-strongswan
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---

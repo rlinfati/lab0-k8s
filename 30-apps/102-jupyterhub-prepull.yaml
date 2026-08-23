@@ -1,0 +1,153 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-lab0-hub
+  namespace: jupyterhub
+spec:
+  selector:
+    matchLabels:
+      app: pp-lab0-hub
+  template:
+    metadata:
+      labels:
+        app: pp-lab0-hub
+    spec:
+      nodeSelector:
+        m0net/run.jupyterhub: "true"
+      initContainers:
+        - name: pp-lab0-hub-hub
+          image: ghcr.io/rlinfati/lab0-container:jupyter-hub
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-lab0-hub
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-lab0
+  namespace: jupyterhub
+spec:
+  selector:
+    matchLabels:
+      app: pp-lab0
+  template:
+    metadata:
+      labels:
+        app: pp-lab0
+    spec:
+      nodeSelector:
+        m0net/run.jupyterlab: "true"
+      initContainers:
+        - name: pp-lab0-julia-1-13
+          image: ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.13
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-lab0-julia-1-12
+          image: ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.12
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-lab0-julia-1-10
+          image: ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.10
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-lab0-anaconda-latest
+          image: ghcr.io/rlinfati/lab0-container:jupyter-lab-anaconda-latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-lab0-devcpp-latest
+          image: ghcr.io/rlinfati/lab0-container:jupyter-lab-devcpp-latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-lab0-base-latest
+          image: ghcr.io/rlinfati/lab0-container:jupyter-lab-base-latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-lab0
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-dockerstacks
+  namespace: jupyterhub
+spec:
+  selector:
+    matchLabels:
+      app: pp-dockerstacks
+  template:
+    metadata:
+      labels:
+        app: pp-dockerstacks
+    spec:
+      nodeSelector:
+        m0net/run.jupyterlab: "true"
+      initContainers:
+        - name: pp-dockerstacks-julia
+          image: quay.io/jupyter/julia-notebook:latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-dockerstacks-scipy
+          image: quay.io/jupyter/scipy-notebook:latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-dockerstacks-r
+          image: quay.io/jupyter/r-notebook:latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-dockerstacks-pytorch
+          image: quay.io/jupyter/pytorch-notebook:latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-dockerstacks-tensorflow
+          image: quay.io/jupyter/tensorflow-notebook:latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-dockerstacks
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-lab0-cuda
+  namespace: jupyterhub
+spec:
+  selector:
+    matchLabels:
+      app: pp-lab0-cuda
+  template:
+    metadata:
+      labels:
+        app: pp-lab0-cuda
+    spec:
+      nodeSelector:
+        m0net/run.jupyterlab: "true"
+        nvidia.com/gpu.present: "true"
+      initContainers:
+        - name: pp-lab0-juliacuda-1-10
+          image: ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.10
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-dockerstacks-pytorch-cuda13
+          image: quay.io/jupyter/pytorch-notebook:cuda13-latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+        - name: pp-dockerstacks-tensorflow-cuda
+          image: quay.io/jupyter/tensorflow-notebook:cuda-latest
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-lab0-cuda
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---

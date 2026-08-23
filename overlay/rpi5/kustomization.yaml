@@ -1,0 +1,60 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../20-infra/
+  - ../../30-apps/
+components:
+  - ../common/
+patches:
+# 20-infra - https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+  - target:
+      namespace: kube-flannel
+      kind: DaemonSet
+      name: kube-flannel-ds
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/args/-
+        value: --iface=tailscale0
+# 30-apps/100-jupyterhub.yaml
+  - target:
+      kind: Secret
+      name: jhub.oauth
+      namespace: jupyterhub
+    patch: |-
+      kind: Secret
+      metadata:
+        name: jhub.oauth
+      stringData:
+        AuthMode: shared-password
+# 30-apps/109-jupyterhub-ingress.yaml
+  - target:
+      group: networking.k8s.io
+      kind: Ingress
+      name: jupyterhub
+      namespace: jupyterhub
+    patch: |-
+      - op: replace
+        path: /metadata/annotations/traefik.ingress.kubernetes.io~1router.entrypoints
+        value: web
+      - op: remove
+        path: /metadata/annotations/cert-manager.io~1cluster-issuer
+      - op: remove
+        path: /spec/tls
+      - op: remove
+        path: /spec/rules/0/host
+# 20-infra/402-rbackup-prepull.yaml
+# 20-infra/701-cloudflare-prepull.yaml
+# 20-infra/801-tailscale-prepull.yaml
+# 30-apps/102-jupyterhub-prepull.yaml
+# 30-apps/201-grbts-prepull.yaml
+# 30-apps/801-vlmcsd-prepull.yaml
+# 30-apps/901-strongswan-prepull.yaml
+  - target:
+      group: apps
+      kind: DaemonSet
+      name: "pp-.*"
+    patch: |-
+      $patch: delete
+      kind: DaemonSet
+      metadata:
+        name: ignored

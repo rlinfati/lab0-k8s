@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-vlmcsd
+  namespace: vlmcsd
+spec:
+  selector:
+    matchLabels:
+      app: pp-vlmcsd
+  template:
+    metadata:
+      labels:
+        app: pp-vlmcsd
+    spec:
+      nodeSelector:
+        m0net/run.vlmcsd: "true"
+      initContainers:
+        - name: vlmcsd
+          image: ghcr.io/rlinfati/lab0-container:vlmcsd
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-vlmcsd
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---

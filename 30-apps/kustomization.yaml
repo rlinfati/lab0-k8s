@@ -1,0 +1,31 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- 100-jupyterhub.yaml
+- 102-jupyterhub-prepull.yaml
+- 109-jupyterhub-ingress.yaml
+- 200-grbts.yaml
+- 201-grbts-prepull.yaml
+- 601-rbackup-cloud.yaml
+- 602-rbackup-databackup.yaml
+- 603-rbackup-mirror.yaml
+- 610-rbackup-rec4cam.yaml
+- 700-yfinance.yaml
+- 800-vlmcsd.yaml
+- 801-vlmcsd-prepull.yaml
+- 900-strongswan.yaml
+- 901-strongswan-prepull.yaml
+configMapGenerator:
+  - name: jhub.config
+    namespace: jupyterhub
+    behavior: merge
+    files:
+      - jupyterhub_config.py=101-jupyterhub_config.py
+  - name: yfinance-script
+    namespace: rbackup
+    behavior: merge
+    files:
+      - script.py=701-yfinance-script.py
+patches:
+- path: 103-jupyterhub-local.yaml
+- path: 202-grbts-local.yaml

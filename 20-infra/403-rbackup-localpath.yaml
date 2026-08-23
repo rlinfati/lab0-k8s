@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rbackup-localpath
+  namespace: rbackup
+spec:
+  selector:
+    matchLabels:
+      app: rbackup-localpath
+  template:
+    metadata:
+      labels:
+        app: rbackup-localpath
+    spec:
+      containers:
+      - name: rbackup
+        image: ghcr.io/rlinfati/lab0-container:rbackup
+        securityContext:
+          privileged: true
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -ex
+            #
+            mkdir -p $HOME/.config/rclone/
+            cp /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
+            #
+            rclone version
+            #
+            while true; do
+                echo "[$(date)] backup ${K8SNODENAME}"
+                rclone sync /var/mnt/localpath \
+                  linfati-rlshared:backup-kubernetes/${K8SNODENAME}/ \
+                  --exclude '**/site-packages/**'
+                echo "[$(date)] backup terminated, sleeping 28800 seconds"
+                sleep 28800
+            done
+            #
+            exec true
+        volumeMounts:
+        - name: rbackup-config
+          mountPath: /run/rbackup-config/
+          readOnly: true
+        - name: localpath
+          mountPath: /var/mnt/localpath
+          readOnly: true
+        env:
+          - name: K8SNODENAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+      volumes:
+      - name: rbackup-config
+        secret:
+          secretName: config
+      - name: localpath
+        hostPath:
+          path: /var/mnt/localpath
+          type: Directory
+---

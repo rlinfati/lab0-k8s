@@ -1,0 +1,18 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+- 110-traefik.yaml
+- 200-localpath.yaml
+- 310-certmanager.yaml
+- 311-clusterissuer.yaml
+- 400-rbackup-ns.yaml
+- 402-rbackup-prepull.yaml
+- 403-rbackup-localpath.yaml
+- 700-cloudflare.yaml
+- 701-cloudflare-prepull.yaml
+- 800-tailscale.yaml
+- 801-tailscale-prepull.yaml
+- 910-nvidia-device-plugin.yaml
+patches:
+  - path: 401-rbackup-secrets.yaml

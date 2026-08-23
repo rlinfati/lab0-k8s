@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-tailscale
+  namespace: tailscale
+spec:
+  selector:
+    matchLabels:
+      app: pp-tailscale
+  template:
+    metadata:
+      labels:
+        app: pp-tailscale
+    spec:
+      nodeSelector:
+        m0net/run.tailscale: "true"
+      initContainers:
+        - name: tailscale
+          image: ghcr.io/tailscale/tailscale:latest
+          command: ["tailscale", "version"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-tailscale
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---

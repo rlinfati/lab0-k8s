@@ -1,0 +1,12 @@
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: tailscale
+environment:
+$patch: delete
+---
+apiVersion: v1alpha1
+kind: ExtensionServiceConfig
+name: cloudflared
+environment:
+$patch: delete
+---

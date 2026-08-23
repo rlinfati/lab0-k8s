@@ -1,0 +1,25 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-rbackup
+  namespace: rbackup
+spec:
+  selector:
+    matchLabels:
+      app: pp-rbackup
+  template:
+    metadata:
+      labels:
+        app: pp-rbackup
+    spec:
+      initContainers:
+        - name: rbackup
+          image: ghcr.io/rlinfati/lab0-container:rbackup
+          command: ["/bin/true"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-rbackup
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---

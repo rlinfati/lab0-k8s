@@ -1,0 +1,56 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: rbackup-cloud
+  namespace: rbackup
+spec:
+  schedule: "31 03 * * 0,2,4,6" # minuto hora dia1-31 mes1-12 dia0-6
+  timeZone: "America/Santiago"
+  concurrencyPolicy: Replace
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          nodeSelector:
+            m0net/run.rbackup: "databackup"
+          containers:
+          - name: rbackup
+            image: ghcr.io/rlinfati/lab0-container:rbackup
+            command:
+              - /bin/sh
+              - -c
+              - |
+                set -ex
+                #
+                mkdir -p $HOME/.config/rclone/
+                cp /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
+                #
+                rclone version
+                # DeDupe
+                rclone --dry-run dedupe gdrive:
+                rclone --dry-run dedupe linfati-gdrive:
+                rclone --dry-run dedupe linfati-rlshared:
+                rclone --dry-run dedupe ubiobio:
+                # Rescue Orphans
+                rclone backend rescue gdrive:
+                rclone backend rescue linfati-gdrive:
+                rclone backend rescue linfati-rlshared:
+                rclone backend rescue ubiobio:
+                # -> RodrigoLinfatiShared
+                rclone sync dropbox:          linfati-rlshared:mirror-dropbox/
+                rclone sync gdrive:           linfati-rlshared:mirror-gdrive/
+                rclone sync linfati-gdrive:   linfati-rlshared:mirror-linfati-gdrive/
+                rclone sync onedrive:         linfati-rlshared:mirror-onedrive/
+                rclone sync ubiobio:          linfati-rlshared:mirror-ubiobio-gdrive/ --exclude rlinfati-vscam/
+                rclone sync ubiobio-ms:       linfati-rlshared:mirror-ubiobio-onedrive/
+                exec true
+            volumeMounts:
+            - name: rbackup-config
+              mountPath: /run/rbackup-config/
+              readOnly: true
+          volumes:
+          - name: rbackup-config
+            secret:
+              secretName: config
+          restartPolicy: Never
+---

@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: pp-cloudflared
+  namespace: cloudflared
+spec:
+  selector:
+    matchLabels:
+      app: pp-cloudflared
+  template:
+    metadata:
+      labels:
+        app: pp-cloudflared
+    spec:
+      nodeSelector:
+        m0net/run.cloudflared: "true"
+      initContainers:
+        - name: cloudflared
+          image: docker.io/cloudflare/cloudflared:latest
+          command: ["cloudflared", "version"]
+          imagePullPolicy: Always
+      containers:
+        - name: pp-cloudflared
+          image: registry.access.redhat.com/ubi10/ubi:latest
+          command: ["sleep", "infinity"]
+          imagePullPolicy: Always
+---
