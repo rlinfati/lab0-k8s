@@ -20,59 +20,105 @@ PDF_PATH    = f"YahooFinanceHistory-{K8SNODENAME}.pdf"
 FROM_DATE   = "2025-01-01"
 
 TICKERS = [
-    # ETF Singular
-    'CFIETFIPSA.SN',            # 94.44
-    'CFIETFCD.SN',              #100.00
-    'CFIETFCC.SN',              #100.00
-    'CFIETFLP.SN',              # 94.44
-    'CFIETFGE.SN',              #100.00
-    'CFISPETF.SN',              # 99.44
-    'CFINASDAQ.SN',             # 86.67
-    'CFIGC.SN',                 # 47.78
-    'CFI4060ETF.SN',            # 31.11
-    'CFIETFBRL.SN',             # 29.44
-    # ETF BtgPactual
-    'CFIBTETFMP.SN',            # 77.22
-    'CFIETFRFLP.SN',            # 00.00
-    'CFIBTETFTW.SN',            # 00.00
-    'CFIETFUSA.SN',             # 00.00
-    'CFIETFLAT.SN',             # 00.00
-    # CFI CFM BetterPlan
-    'CFMITNIPSA.SN',            # 99.44
-    'CFMLVENFR.SN',             # 67.78
-    'CFIFALCFIG.SN',            # 96.11
-    'CFIMBIDA-A.SN',            # 71.11
-    'CFIAMSLPA.SN',             # 45.00
-    'CFINRENTAS.SN',            # 79.44
-    'CFIMBIRF-A.SN',            # 97.78
-    # CFI CFM Flexifolio
-    'CFIPIONERO.SN',            # 80.00
-    'CFIMRCLP.SN',              # 99.44
-    'CFIAMDVASC.SN',            # 90.00
-    'CFIADVAEFA.SN',            # 00.00
-    'CFIAMDVATA.SN',            # 00.00
-    # Banchile MarketPlus
-    # 'CFIBMPEM-E.SN',          # 63.33
-    # 'CFIBCHMPUS.SN',          # 69.44
-    # 'CFIBCHMPGB.SN',          # 94.44
-    # 'CFIBCHDECH.SN',          #100.00
-    # 'CFIBCHDCPA.SN',          # 85.56
-    # Currencies
-    'BRL=X',
-    'BRLCLP=X',
-    'CLP=X',
-    'DX-Y.NYB',
-    'EURUSD=X',
-    'EURCLP=X',
-    'BTC-USD',
-    # Indexies and commodities
-    'HG=F',
-    'GC=F',
-    '^IPSA',
-    '^GSPC',
-    'ES=F',
-    '^IXIC',
-    'NQ=F',
+    # NAC - VARIABLE
+    ## IPSA
+    'SPIPSA.SN',                #       - S&P IPSA Index
+    'CFMITNIPSA.SN',            # 99.44 - ETF/ITAU IPSA
+    'CFIETFIPSA.SN',            # 94.44 - ETF/Singular IPSA
+    'CFIBTGIPSA.SN',            # 00.00 - ETF/BTG IPSA
+    ## Acciones Nacionales
+    'CFMLVENFR.SN',             # 67.78 - CFM/LarrainVial Enfoque - NO-YAHOO
+    'CFIPIONERO.SN',            # 80.00 - CFI/Moneda Pionero
+
+    # NAC - FIJA - Corto
+    'CFIETFCD.SN',              #100.00 - ETF/Singular Corto Duracion
+    'CFIAMSLPA.SN',             # 45.00 - CFI/Ameris Corto Plazo
+    # NAC - FIJA - Mediano
+    'CFIETFCC.SN',              #100.00 - ETF/Singular Chile Corporativo
+    'CFIBTETFMP.SN',            # 77.22 - ETF/BTG Medio Plazo
+    # NAC - FIJA - Largo
+    'CFIETFLP.SN',              # 94.44 - ETF/Singular Largo Plazo
+    'CFIETFRFLP.SN',            # 00.00 - ETF/BTG Largo Plazo
+    'CFIFALCFIG.SN',            # 96.11 - CFI/Falcon Fixed Income
+    'CFIMRCLP.SN',              # 99.44 - CFI/Moneda Renta CLP
+    'CFIMBIDA-A.SN',            # 71.11 - CFI/MBI Deuda Alternativa
+    # NAC - Mixto
+    'CFIMBIRF-A.SN',            # 97.78 - CFI/MBI Deuda Plus 15 variable 85 fijo
+    'CFI4060ETF.SN',            # 31.11 - ETF/Singular 40 variable 60 fija
+
+    # NAC - ALTERNATIVA
+    'CFINRENTAS.SN',            # 79.44 - CFI/Independencia Rentas Inmobiliarias
+
+    # INT - VARIABLE
+    ## Total World
+    'GEISAC.FGI',               #       - Global / World Equity Index
+    'ACWI',                     #       - iShares MSCI ACWI ETF
+    'VT',                       #       - Vanguard Total World Stock ETF
+    'CFIETFGE.SN',              #100.00 - ETF/Singular Global Equity
+    'CFIBTETFTW.SN',            # 00.00 - ETF/BTG Total World
+    ## S&P-500
+    '^GSPC',                    #       - S&P 500 Index
+    'ES=F',                     #       - E-mini S&P 500 Future
+    'CFISPETF.SN',              # 99.44 - ETF/Singular S&P-500
+    'CFIETFUSA.SN',             # 00.00 - ETF/BTG USA
+    ## Nasdaq
+    '^IXIC',                    #       - Nasdaq Composite Index
+    '^NDX',                     #       - Nasdaq-100 Index
+    'NQ=F',                     #       - E-mini Nasdaq-100 Future
+    'CFINASDAQ.SN',             # 86.67 - ETF/Singular Nasdaq
+    ## Russell
+    '^RUT',                     #       - Russell 2000 Index
+    ## Dow Jones
+    '^DJI',                     #       - Dow Jones Industrial Average
+    ## Europe
+    '^STOXX50E',                #       - EURO STOXX 50 Index
+    'CFIETFEUR.SN',             # 00.00 - ETF/Singular Europe
+    'CFIETFEUE.SN',             # 00.00 - ETF/BTG Europe
+    ## Asia
+    '^N225',                    #       - Nikkei 225
+    '^HSI',                     #       - Hang Seng Index
+    ## Emerging Markets
+    'IEMG',                     #       - iShares Core MSCI Emerging Markets ETF
+    'CFIETFEM.SN',              # 00.00 - ETF/Singular Emerging Markets
+    'CFIETFGEM.SN',             # 00.00 - ETF/BTG Emerging Markets
+    ## Latin America
+    'EWZ',                      #       - iShares MSCI Brazil ETF
+    'CFIETFBRE.SN',             # 00.00 - ETF/Singular Brazil
+    'CFIETFLAT.SN',             # 00.00 - ETF/BTG Latin America
+    ## DVA
+    'CFIAMDVASC.SN',            # 90.00 - CFI/AmerisDVA Silicon
+    'CFIADVAEFA.SN',            # 00.00 - CFI/AmerisDVA EFA
+    'CFIAMDVATA.SN',            # 00.00 - CFI/AmerisDVA MedTech
+
+    # INT - FIJA
+    'CFIGC.SN',                 # 47.78 - ETF/Singular Global Corporate
+    'CFIETFBRL.SN',             # 29.44 - ETF/Singular Fixed Income BRL
+    'CFIETFHY.SN',              # 00.00 - ETF/Singular High Yield
+
+    # INT - ALTERNATIVA
+    'BTC-USD',                  # 00.00 - Bitcoin to USD
+    'CFIETFBTC.SN',             # 00.00 - ETF/Singular Bitcoin
+
+    # MACRO / FX / RISK
+    'CLP=X',                    #       - USD/CLP
+    'DX-Y.NYB',                 #       - U.S. Dollar Index (DXY)
+    '^VIX',                     #       - CBOE Volatility Index
+    'EURUSD=X',                 #       - EUR/USD
+    'EURCLP=X',                 #       - EUR/CLP
+    'BRL=X',                    #       - USD/BRL
+    'BRLCLP=X',                 #       - BRL/CLP
+
+    # RATES
+    '^FVX',                     #       - U.S.  5Y Treasury Yield
+    '^TNX',                     #       - U.S. 10Y Treasury Yield
+    '^TYX',                     #       - U.S. 30Y Treasury Yield
+
+    # COMMODITIES
+    'HG=F',                     #       - Copper Future
+    'GC=F',                     #       - Gold Future
+    'CL=F',                     #       - WTI Crude Oil Future
+    'BZ=F',                     #       - Brent Crude Oil Future
+    'NG=F',                     #       - Natural Gas Future
 ]
 
 def load_existing_data(path: str) -> dict:

@@ -1,17 +1,19 @@
 # .gitignore
 # 20-infra
-401-rbackup-secrets.yaml
+20-infra/401-rbackup-secrets.yaml
+20-infra/charts
 # 30-apps
-103-jupyterhub-local.yaml
-202-grbts-local.yaml
+30-apps/103-jupyterhub-local.yaml
+30-apps/202-grbts-local.yaml
 # 90-talos
-901-secrets.yaml
-901-talosconfig
-904-extension-local.yaml
-905-node-*-*.yaml
+90-talos/901-secrets.yaml
+90-talos/901-talosconfig
+90-talos/902-talosctl.yaml
+90-talos/904-extension-local.yaml
+90-talos/905-node-*-*.yaml
 # overlay
-702-cloudflare-local.yaml
-802-tailscale-local.yaml
+overlay/nuc4x/702-cloudflare-local.yaml
+overlay/nuc4x/802-tailscale-local.yaml
 # .
 NETWORK.md
 TODO.md
