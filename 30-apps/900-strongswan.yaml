@@ -1,0 +1,251 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: strongswan
+  labels:
+    pod-security.kubernetes.io/enforce: privileged
+    pod-security.kubernetes.io/audit: baseline
+    pod-security.kubernetes.io/warn: baseline
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tls
+  namespace: strongswan
+spec:
+  secretName: tls
+  dnsNames:
+  - server.home.arpa
+  issuerRef:
+    kind: ClusterIssuer
+    name: self
+  privateKey:
+    algorithm: ECDSA
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: x509ca
+  namespace: strongswan
+data:
+  m0-0ca-2024.crt: |
+    -----BEGIN CERTIFICATE-----
+    MIIBQTCB6KADAgECAghrFT7O26tv4DAKBggqhkjOPQQDAjAWMRQwEgYDVQQDEwtt
+    MC0wQ0EtMjAyNDAeFw0yNDAxMDEwMDAwMDBaFw0zNTEyMzEyMzU5NTlaMBYxFDAS
+    BgNVBAMTC20wLTBDQS0yMDI0MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEdACI
+    5qAj3IJJDS8aOtfJfcCrOLzBahwYmaNaLJi4x8//22A2mXqqxeZ6VG2jLuhQeGuK
+    CfrwIWpK8h+OjaF+HKMgMB4wDwYDVR0TBAgwBgEB/wIBADALBgNVHQ8EBAMCAgQw
+    CgYIKoZIzj0EAwIDSAAwRQIgeyABEh/DgVV1bH3mIfUOYWWyWh+D7ZDuxMqXwWgC
+    skMCIQCkIgbHSWE6XF+yHAznOyAEcbRkHDm51O4whkYufAbG3Q==
+    -----END CERTIFICATE-----
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ikev2
+  namespace: strongswan
+data:
+  ikev2.conf: |
+    # /etc/strongswan/swanctl/conf.d/ikev2.conf
+    connections {
+        pubkey-eap {
+            version = 2
+            pools = pool-ipv4
+            local {
+                auth = pubkey
+                certs = le-ikev2-srv.crt
+                id = server.home.arpa
+            }
+            remote {
+                auth = eap-dynamic
+                id = %any
+                eap_id = %any
+            }
+            children {
+                tunnel-gwnet {
+                    local_ts = 10.96.0.0/12, 10.244.0.0/16
+                    remote_ts = dynamic
+                    mode = tunnel
+                }
+            }
+        }
+    }
+    pools {
+        pool-ipv4 {
+            addrs = 172.31.101.0/24
+            dns = 10.96.0.10
+        }
+        #pool-ipv6 {
+        #    addrs = fd00::172:31:101:0/112
+        #}
+    }
+    authorities {
+        m0-0ca-2024 {
+            cacert = m0-0ca-2024.crt
+        }
+    }
+    #secrets {
+    #    eap-kubernetes {
+    #        id = kubernetes
+    #        secret = "00000000-0000-0000-0000-000000000000"
+    #    }
+    #}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: nftables
+  namespace: strongswan
+data:
+  nat-masquerade.nft: |
+    # /etc/nftables/nat-masquerade.nft
+    ## NAT44
+    table ip nat {
+      chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        masquerade;
+      }
+    }
+    ## NAT66
+    table ip6 nat {
+      chain postrouting {
+        type nat hook postrouting priority srcnat; policy accept;
+        masquerade;
+      }
+    }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: swan
+  namespace: strongswan
+spec:
+  type: ClusterIP
+  selector:
+    app: swan
+  ports:
+  - name: isakmp
+    port: 500
+    protocol: UDP
+    targetPort: 500
+  - name: nat-t
+    port: 4500
+    protocol: UDP
+    targetPort: 4500
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: swan
+  namespace: strongswan
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: swan
+  template:
+    metadata:
+      labels:
+        app: swan
+    spec:
+      nodeSelector:
+        m0net/run.strongswan: "true"
+      containers:
+      - name: swan
+        image: ghcr.io/rlinfati/lab0-container:strongswan
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -e
+            SWANCTL=/etc/strongswan/swanctl
+            sync_certs() {
+              cp /run/tls/tls.crt "$SWANCTL/x509/le-ikev2-srv.crt"
+              cp /run/tls/tls.key "$SWANCTL/private/le-ikev2-srv.key"
+              chmod 600 "$SWANCTL/private/le-ikev2-srv.key"
+              rm -f "$SWANCTL"/x509ca/le-ikev2-chain-*.crt
+              n=0
+              out=""
+              while IFS= read -r line; do
+                case "$line" in
+                  *"-----BEGIN CERTIFICATE-----"*)
+                    n=$((n + 1))
+                    out=""
+                    if [ "$n" -gt 1 ]; then
+                      out="$SWANCTL/x509ca/le-ikev2-chain-$((n - 1)).crt"
+                    fi
+                    ;;
+                esac
+                if [ -n "$out" ]; then
+                  printf '%s\n' "$line" >> "$out"
+                fi
+              done < /run/tls/tls.crt
+            }
+            kick() {
+              sync_certs || true
+              nft --file /etc/nftables/nat-masquerade.nft || true
+              /usr/bin/swanctl --load-all || true
+            }
+            sync_certs
+            (
+              while true; do
+                if [ -S /run/strongswan/charon.vici ]; then
+                  kick
+                  sleep 3600
+                else
+                  sleep 1
+                fi
+              done
+            ) &
+            exec /usr/libexec/strongswan/charon \
+              --debug-mgr 2 \
+              --debug-ike 2 \
+              --debug-chd 2 \
+              --debug-cfg 2 \
+              --debug-knl 2 \
+              --debug-tls 2 \
+              --debug-esp 2
+        securityContext:
+          privileged: true
+        resources:
+          requests:
+            cpu: 10m
+            memory: 32Mi
+          limits:
+            memory: 256Mi
+        ports:
+        - name: isakmp
+          containerPort: 500
+          protocol: UDP
+          hostPort: 500
+        - name: nat-t
+          containerPort: 4500
+          protocol: UDP
+          hostPort: 4500
+        volumeMounts:
+        - name: nftables
+          mountPath: /etc/nftables/nat-masquerade.nft
+          subPath: nat-masquerade.nft
+        - name: ikev2
+          mountPath: /etc/strongswan/swanctl/conf.d/ikev2.conf
+          subPath: ikev2.conf
+        - name: x509ca
+          mountPath: /etc/strongswan/swanctl/x509ca/m0-0ca-2024.crt
+          subPath: m0-0ca-2024.crt
+        - name: tls
+          mountPath: /run/tls
+          readOnly: true
+      volumes:
+      - name: nftables
+        configMap:
+          name: nftables
+      - name: ikev2
+        configMap:
+          name: ikev2
+      - name: x509ca
+        configMap:
+          name: x509ca
+      - name: tls
+        secret:
+          secretName: tls
+---

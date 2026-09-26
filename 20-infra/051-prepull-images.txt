@@ -1,0 +1,30 @@
+# <labelSelector> <image>
+# labelSelector: kubernetes syntax (a=b,c=d); * = all nodes
+
+*                                                       ghcr.io/rlinfati/lab0-container:rbackup
+
+m0net/run.cloudflared=true                              docker.io/cloudflare/cloudflared:latest
+m0net/run.tailscale=true                                ghcr.io/tailscale/tailscale:latest
+
+m0net/run.grbts=true                                    ghcr.io/rlinfati/lab0-container:grbts
+m0net/run.vlmcsd=true                                   ghcr.io/rlinfati/lab0-container:vlmcsd
+m0net/run.strongswan=true                               ghcr.io/rlinfati/lab0-container:strongswan
+
+m0net/run.jupyterhub=true                               ghcr.io/rlinfati/lab0-container:jupyter-hub
+
+m0net/run.jupyterlab=true                               ghcr.io/rlinfati/lab0-container:jupyter-lab-base-latest
+m0net/run.jupyterlab=true                               ghcr.io/rlinfati/lab0-container:jupyter-lab-devcpp-latest
+m0net/run.jupyterlab=true                               ghcr.io/rlinfati/lab0-container:jupyter-lab-anaconda-latest
+m0net/run.jupyterlab=true                               ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.10
+m0net/run.jupyterlab=true                               ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.12
+m0net/run.jupyterlab=true                               ghcr.io/rlinfati/lab0-container:jupyter-lab-julia-1.13
+
+m0net/run.jupyterlab=true                               quay.io/jupyter/julia-notebook:latest
+m0net/run.jupyterlab=true                               quay.io/jupyter/scipy-notebook:latest
+m0net/run.jupyterlab=true                               quay.io/jupyter/r-notebook:latest
+m0net/run.jupyterlab=true                               quay.io/jupyter/pytorch-notebook:latest
+m0net/run.jupyterlab=true                               quay.io/jupyter/tensorflow-notebook:latest
+
+m0net/run.jupyterlab=true,nvidia.com/gpu.present=true   ghcr.io/rlinfati/lab0-container:jupyter-lab-juliacuda-1.10
+m0net/run.jupyterlab=true,nvidia.com/gpu.present=true   quay.io/jupyter/pytorch-notebook:cuda13-latest
+m0net/run.jupyterlab=true,nvidia.com/gpu.present=true   quay.io/jupyter/tensorflow-notebook:cuda-latest
