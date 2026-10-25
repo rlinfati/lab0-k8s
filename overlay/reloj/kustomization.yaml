@@ -1,0 +1,33 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../20-infra/
+  - ../../30-apps/
+components:
+  - ../common/
+patches:
+# 30-apps/103-jupyterhub-local.yaml
+  - target:
+      kind: Secret
+      name: jhub.oauth
+      namespace: jupyterhub
+    patch: |-
+      kind: Secret
+      metadata:
+        name: jhub.oauth
+        namespace: jupyterhub
+      stringData:
+        OAuthCallBack: https://lab025a.m0.cl/hub/oauth_callback
+# 30-apps/109-jupyterhub-ingress.yaml
+  - target:
+      group: networking.k8s.io
+      kind: Ingress
+      name: jupyterhub
+      namespace: jupyterhub
+    patch: |-
+      - op: replace
+        path: /spec/rules/0/host
+        value: lab025a.m0.cl
+      - op: replace
+        path: /spec/tls/0/hosts/0
+        value: lab025a.m0.cl

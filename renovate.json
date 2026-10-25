@@ -1,0 +1,30 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "enabledManagers": [
+    "custom.regex",
+    "github-actions",
+    "kustomize",
+    "kubernetes"
+  ],
+  "kubernetes": {
+    "managerFilePatterns": [
+      "/^(20-infra|30-apps)/.+\\.yaml$/"
+    ]
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "managerFilePatterns": [
+        "/^10-host/.+\\.sh$/"
+      ],
+      "matchStrings": [
+        "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)(?: extractVersion=(?<extractVersion>\\S+))?\\s+\\w+=\"(?<currentValue>[^\"]+)\""
+      ]
+    }
+  ],
+  "dependencyDashboard": true,
+  "dependencyDashboardApproval": true
+}

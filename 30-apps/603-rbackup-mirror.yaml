@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mirror-script
+  namespace: rbackup
+data:
+  run.sh: |
+    # run.sh
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rbackup-mirror
+  namespace: rbackup
+spec:
+  selector:
+    matchLabels:
+      app: rbackup-mirror
+  template:
+    metadata:
+      labels:
+        app: rbackup-mirror
+    spec:
+      nodeSelector:
+        m0net/run.rbackup: "mirror"
+      containers:
+      - name: rbackup
+        image: ghcr.io/rlinfati/lab0-container:rbackup
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -ex
+            #
+            rand() {
+                echo $(( $(od -An -N4 -tu4 /dev/urandom) % $1 ))
+            }
+            #
+            while true; do
+                echo "[$(date)] mirror ${K8SNODENAME}"
+                sh -ex /run/mirror-script/run.sh || echo "[$(date)] mirror FAILED"
+                DELAY=$(( 24 * 3600 - 1800 + $(rand 3600) ))
+                echo "[$(date)] mirror terminated, sleeping ${DELAY} seconds"
+                sleep ${DELAY}
+            done
+        env:
+          - name: K8SNODENAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+        volumeMounts:
+        - name: rbackup-config
+          mountPath: /run/rbackup-config/
+          readOnly: true
+        - name: mirror-script
+          mountPath: /run/mirror-script/
+          readOnly: true
+        - name: mirror
+          mountPath: /DataVolume/DataBackup
+      volumes:
+      - name: rbackup-config
+        secret:
+          secretName: config
+      - name: mirror-script
+        configMap:
+          name: mirror-script
+      - name: mirror
+        hostPath:
+          path: /DataVolume/DataBackup
+          type: Directory
+---
+# find /DataVolume/DataBackup ! -uid 1000 -exec chown 1000 {} +
+# find /DataVolume/DataBackup ! -gid 100 -exec chgrp 100 {} +
+# find /DataVolume/DataBackup -type d ! -perm 0755 -exec chmod 0755 {} +
+# find /DataVolume/DataBackup -type f ! -perm 0644 -exec chmod 0644 {} +
+# find /DataVolume/DataBackup ! -context 'system_u:object_r:container_file_t:s0' -exec chcon -u system_u -r object_r -t container_file_t -l s0 -- {} +
+---

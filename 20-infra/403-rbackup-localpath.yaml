@@ -1,0 +1,67 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: rbackup-localpath
+  namespace: rbackup
+spec:
+  selector:
+    matchLabels:
+      app: rbackup-localpath
+  template:
+    metadata:
+      labels:
+        app: rbackup-localpath
+    spec:
+      containers:
+      - name: rbackup
+        image: ghcr.io/rlinfati/lab0-container:rbackup
+        securityContext:
+          seLinuxOptions:
+            type: spc_t
+        command:
+          - /bin/sh
+          - -c
+          - |
+            set -ex
+            #
+            rand() {
+                echo $(( $(od -An -N4 -tu4 /dev/urandom) % $1 ))
+            }
+            #
+            mkdir -p $HOME/.config/rclone/
+            cp /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
+            #
+            rclone version
+            #
+            while true; do
+                echo "[$(date)] backup ${K8SNODENAME}"
+                rclone sync /var/mnt/localpath \
+                  linfati-rlshared:backup-kubernetes/${K8SNODENAME}/ \
+                  --exclude '**/site-packages/**'
+                DELAY=$(( 8 * 3600 - 1800 + $(rand 3600) ))
+                echo "[$(date)] backup terminated, sleeping ${DELAY} seconds"
+                sleep ${DELAY}
+            done
+            #
+            exec true
+        volumeMounts:
+        - name: rbackup-config
+          mountPath: /run/rbackup-config/
+          readOnly: true
+        - name: localpath
+          mountPath: /var/mnt/localpath
+          readOnly: true
+        env:
+          - name: K8SNODENAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+      volumes:
+      - name: rbackup-config
+        secret:
+          secretName: config
+      - name: localpath
+        hostPath:
+          path: /var/mnt/localpath
+          type: Directory
+---

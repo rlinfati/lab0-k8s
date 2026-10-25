@@ -1,0 +1,45 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- 100-jupyterhub.yaml
+- 109-jupyterhub-ingress.yaml
+- 200-grbts.yaml
+- 602-rbackup-databackup.yaml
+- 603-rbackup-mirror.yaml
+- 610-rbackup-rec4cam.yaml
+- 700-yfinance.yaml
+- 800-vlmcsd.yaml
+- 900-strongswan.yaml
+configMapGenerator:
+  - name: jhub.config
+    namespace: jupyterhub
+    behavior: merge
+    files:
+      - jupyterhub_config.py=101-jupyterhub_config.py
+      - idle_culler_config.py=102-idle_culler_config.py
+  - name: yfinance-script
+    namespace: rbackup
+    behavior: merge
+    files:
+      - script.py=701-yfinance-script.py
+      - next_run.py=702-yfinance-next-run.py
+  - name: databackup-script
+    namespace: rbackup
+    behavior: merge
+    files:
+      - run.sh=602-rbackup-databackup.sh
+  - name: mirror-script
+    namespace: rbackup
+    behavior: merge
+    files:
+      - run.sh=603-rbackup-mirror.sh
+  - name: ikev2
+    namespace: strongswan
+    behavior: merge
+    files:
+      - ikev2-cabhs.conf=901-strongswan-ikev2-cabhs.conf
+      - ikev2-clval.conf=901-strongswan-ikev2-clval.conf
+      - ikev2-fenix.conf=901-strongswan-ikev2-fenix.conf
+patches:
+- path: 103-jupyterhub-local.yaml
+- path: 202-grbts-local.yaml
