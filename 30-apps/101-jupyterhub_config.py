@@ -5,6 +5,7 @@ import socket
 import sys
 
 import kubernetes
+from tornado import web
 from oauthenticator.azuread import AzureAdOAuthenticator
 
 c = get_config()
@@ -120,8 +121,8 @@ GPU_MODEL_ANNOTATION = "gpu-model"
 # kubectl annotate node $(hostname --long) gpu-model="GPU Model"
 JUPYTERLAB_LABELS = (
     ("m0net/run.jupyterlab", "true"),
-    ("m0net/run.jupytermin", "true"),
 )
+LAB_GROUP_PREFIX = "jnode-"
 
 MEMORY_SAFETY_MARGIN_GIB = 2
 CPUFREE_MAX_CPU = 4
@@ -533,6 +534,15 @@ def get_node_or_raise(hostname):
 
     return node
 
+def lab_group_name(hostname):
+    return f"{LAB_GROUP_PREFIX}{hostname.partition('.')[0]}"
+
+def user_can_use_node(group_names, node):
+    return any(
+        node["labels"].get(key) == value
+        for key, value in JUPYTERLAB_LABELS
+    ) or lab_group_name(node["hostname"]) in group_names
+
 # -----------------------------------------------------------------------------
 # HTML generation
 # -----------------------------------------------------------------------------
@@ -572,13 +582,10 @@ def render_node_option(node):
 
     return f'<option value="{hostname}">{short_name}</option>'
 
-def browser_node_data(node):
+def browser_node_data(node, group_names):
     return {
         "name": node["name"],
-        "lab": any(
-            node["labels"].get(key) == value
-            for key, value in JUPYTERLAB_LABELS
-        ),
+        "lab": user_can_use_node(group_names, node),
         "ready": node["ready"],
         "unschedulable": node["unschedulable"],
         "taints": node["taints"],
@@ -631,8 +638,10 @@ def dynamic_options_form(spawner):
         for node in nodes
     )
 
+    group_names = {group.name for group in spawner.user.groups}
+
     browser_inventory = {
-        node["hostname"]: browser_node_data(node)
+        node["hostname"]: browser_node_data(node, group_names)
         for node in nodes
     }
 
@@ -1068,18 +1077,15 @@ def dynamic_options_form(spawner):
         );
 
         function nodeLabel(resources) {{
-            const gpuAvailable = gpuTotal(resources.avaGpu);
             // Nominal size: the OS reports a bit less than the installed RAM.
             const memoryCapacity = Math.ceil(resources.capMemory / 4) * 4;
 
             return (
                 `${{resources.name.split(".")[0]}} · ` +
                 `${{nodeState(resources)}} · ` +
-                `CPU ${{compact(resources.avaCpu)}}/` +
-                `${{compact(resources.capCpu)}} · ` +
-                `RAM ${{compact(resources.avaMemory)}}/${{memoryCapacity}} · ` +
-                `GPU ${{gpuAvailable === null ? "-" : gpuAvailable}}/` +
-                `${{gpuTotal(resources.capGpu)}}`
+                `CPU ${{compact(resources.capCpu)}} · ` +
+                `RAM ${{memoryCapacity}} · ` +
+                `GPU ${{gpuTotal(resources.capGpu)}}`
             );
         }}
 
@@ -1281,9 +1287,6 @@ def options_from_form(formdata):
             "The selected CUDA image requires at least one GPU."
         )
 
-    node = get_node_or_raise(hostname)
-    validate_resources(node, cpu, memory_gib, gpu)
-
     return {
         "node": hostname,
         "image": image,
@@ -1299,8 +1302,17 @@ c.KubeSpawner.options_from_form = options_from_form
 # Apply user selection
 # -----------------------------------------------------------------------------
 
-def apply_user_options(spawner, options):
+def validate_user_options(spawner, options):
     node = get_node_or_raise(options["node"])
+
+    group_names = {group.name for group in spawner.user.groups}
+
+    if not user_can_use_node(group_names, node):
+        raise ValueError(
+            f"User '{spawner.user.name}' is not allowed on node "
+            f"'{node['hostname']}' (group '{lab_group_name(node['hostname'])}' "
+            "required)."
+        )
 
     validate_resources(
         node=node,
@@ -1309,6 +1321,15 @@ def apply_user_options(spawner, options):
         gpu=options["gpu"],
     )
 
+def pre_spawn_validate(spawner):
+    try:
+        validate_user_options(spawner, spawner.user_options)
+    except ValueError as exc:
+        raise web.HTTPError(400, "%s", str(exc))
+
+c.KubeSpawner.pre_spawn_hook = pre_spawn_validate
+
+def apply_user_options(spawner, options):
     cpu = options["cpu"]
     memory_bytes = options["memory_gib"] * 1024**3
     gpu = options["gpu"]
@@ -1324,18 +1345,6 @@ def apply_user_options(spawner, options):
     spawner.node_selector = {
         HOSTNAME_LABEL: options["node"],
     }
-    spawner.node_affinity_required = [
-        {
-            "matchExpressions": [
-                {
-                    "key": key,
-                    "operator": "In",
-                    "values": [value],
-                },
-            ],
-        }
-        for key, value in JUPYTERLAB_LABELS
-    ]
 
     short_hostname = options["node"].partition(".")[0]
     pvc_name = f"work-{spawner.user.name}-{short_hostname}"
@@ -1370,11 +1379,25 @@ c.KubeSpawner.apply_user_options = apply_user_options
 # Services
 # -----------------------------------------------------------------------------
 
+def lab_groups():
+    try:
+        return {
+            lab_group_name(hostname): []
+            for hostname in get_node_inventory()
+        }
+    except Exception as exc:
+        print(
+            f"WARNING: jnode groups not created, cannot list nodes: {exc}",
+            file=sys.stderr,
+        )
+        return {}
+
 c.JupyterHub.load_groups = {
     "idle-2h": [],
     "idle-8h": [],
     "idle-24h": [],
     "idle-72h": [],
+    **lab_groups(),
 }
 
 c.JupyterHub.services = [

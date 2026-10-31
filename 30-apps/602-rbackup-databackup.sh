@@ -18,7 +18,7 @@ trap 'kill "$HEARTBEAT" || true; rm -f "$LOCK"' EXIT
 trap 'exit 1' TERM INT
 #
 mkdir -p $HOME/.config/rclone/
-cp /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
+install -m 600 /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
 #
 rclone version
 # DeDupe
@@ -52,9 +52,8 @@ rclone sync linfati-rlshared:                   /DataVolume/DataBackup/ --no-upd
 #
 mkdir -p $HOME/.ssh
 chmod 700 $HOME/.ssh
-cp /run/rbackup-config/id_ed25519 $HOME/.ssh/id_ed25519
-chmod 400 $HOME/.ssh/id_ed25519
-touch $HOME/.ssh/known_hosts
+install -m 400 /run/rbackup-config/id_ed25519 $HOME/.ssh/id_ed25519
+: > $HOME/.ssh/known_hosts
 chmod 600 $HOME/.ssh/known_hosts
 #
 rsync --version

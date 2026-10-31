@@ -10,7 +10,7 @@ data:
     set -x
 
     mkdir -p $HOME/.config/rclone/
-    cp /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
+    install -m 600 /run/rbackup-config/rclone.conf $HOME/.config/rclone/rclone.conf
 
     CONFIG="${CONFIG:-RTSP}" # RTSP | HTTP
     CFGUSR="${CFGUSR:-admin}"

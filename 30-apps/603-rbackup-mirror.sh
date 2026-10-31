@@ -4,9 +4,8 @@ set -ex
 #
 mkdir -p $HOME/.ssh
 chmod 700 $HOME/.ssh
-cp /run/rbackup-config/id_ed25519 $HOME/.ssh/id_ed25519
-chmod 400 $HOME/.ssh/id_ed25519
-touch $HOME/.ssh/known_hosts
+install -m 400 /run/rbackup-config/id_ed25519 $HOME/.ssh/id_ed25519
+: > $HOME/.ssh/known_hosts
 chmod 600 $HOME/.ssh/known_hosts
 #
 rsync --version
